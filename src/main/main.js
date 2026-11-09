@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Settings } from './settings.js';
+import { OriginalSync, normalizeOriginalRoot } from './original-sync.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(__dirname, '..'); // …/src
@@ -29,6 +30,7 @@ const settings = new Settings(path.join(app.getPath('userData'), 'settings.json'
 if (!settings.get('hardwareAcceleration', false)) app.disableHardwareAcceleration();
 let win = null;
 let worker = null;
+let sync = null;
 let workerReady = null;
 let libraryPath = null;
 
@@ -143,11 +145,17 @@ function registerProtocol() {
 function themeBackground() {
   const t = settings.get('theme', 'auto');
   const dark = t === 'dark' || (t === 'auto' && nativeTheme.shouldUseDarkColors);
-  return t === 'sepia' ? '#f4ecd8' : dark ? '#16181d' : '#f7f6f2';
+  return t === 'sepia' ? '#ebe0c8' : dark ? '#1b1814' : '#f3eee4';
+}
+
+function windowState() {
+  if (!win || win.isDestroyed()) return null;
+  return { maximized: win.isMaximized(), minimized: win.isMinimized(), fullscreen: win.isFullScreen(), focused: win.isFocused(), platform: process.platform };
 }
 
 function createWindow() {
   const b = settings.get('bounds', { width: 1280, height: 820 });
+  const mac = process.platform === 'darwin';
   win = new BrowserWindow({
     ...b,
     minWidth: 760,
@@ -156,6 +164,10 @@ function createWindow() {
     title: 'الموسوعة الإباضية',
     backgroundColor: themeBackground(),
     autoHideMenuBar: true,
+    // The app draws its own title bar. 'hidden' keeps the native frame behaviour (Windows 11 rounded
+    // corners, shadow, edge resizing, snapping); macOS keeps its traffic lights inside our bar.
+    titleBarStyle: mac ? 'hiddenInset' : 'hidden',
+    trafficLightPosition: mac ? { x: 14, y: 13 } : undefined,
     icon: path.join(SRC, '..', 'build', 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -182,6 +194,8 @@ function createWindow() {
     settings.flush();
   });
   win.on('closed', () => (win = null));
+  const pushState = () => win && !win.isDestroyed() && win.webContents.send('window-state', windowState());
+  for (const ev of ['maximize', 'unmaximize', 'enter-full-screen', 'leave-full-screen', 'focus', 'blur']) win.on(ev, pushState);
 
   const wc = win.webContents;
   wc.setWindowOpenHandler(({ url }) => {
@@ -269,7 +283,7 @@ function registerIpc() {
   });
   ipcMain.handle('settings:all', (e) => (isTrusted(e) ? settings.all() : {}));
   ipcMain.handle('settings:set', (e, key, value) => {
-    if (!isTrusted(e) || typeof key !== 'string' || ['libraryPath', 'bounds', 'maximized'].includes(key)) return false;
+    if (!isTrusted(e) || typeof key !== 'string' || ['libraryPath', 'bounds', 'maximized', 'originalPath', 'syncSignature', 'lastSync', 'autoSync'].includes(key)) return false;
     if (key === 'hardwareAcceleration') value = !!value;
     settings.set(key, value);
     if (key === 'theme') win?.setBackgroundColor(themeBackground());
@@ -311,6 +325,39 @@ function registerIpc() {
   ipcMain.handle('pdf:open', (e, url, title) => {
     if (!isTrusted(e)) return;
     openPdfWindow(url, title);
+  });
+  ipcMain.handle('sync:status', (e) => (isTrusted(e) && sync ? sync.status() : null));
+  ipcMain.handle('sync:run', (e) => {
+    if (isTrusted(e) && sync) sync.check(true);
+    return sync?.status() ?? null;
+  });
+  ipcMain.handle('sync:auto', (e, on) => {
+    if (!isTrusted(e)) return;
+    settings.set('autoSync', !!on);
+    if (on) sync?.check(false);
+  });
+  ipcMain.handle('sync:choose', async (e) => {
+    if (!isTrusted(e)) return null;
+    const r = await dialog.showOpenDialog(win, {
+      title: 'اختر مجلّد تثبيت البرنامج الأصلي (مثل C:\\ibadi)',
+      properties: ['openDirectory'],
+    });
+    if (r.canceled || !r.filePaths[0]) return { ok: false, canceled: true };
+    const root = normalizeOriginalRoot(r.filePaths[0]);
+    if (!root) return { ok: false, error: 'لم يُعثر في هذا المجلّد على بيانات البرنامج الأصلي (database\\master.db).' };
+    settings.set('originalPath', root);
+    sync?.check(true);
+    return { ok: true, status: sync?.status() };
+  });
+  ipcMain.handle('window:state', (e) => (isTrusted(e) ? windowState() : null));
+  ipcMain.handle('window:control', (e, action) => {
+    if (!isTrusted(e) || !win || win.isDestroyed()) return;
+    if (action === 'minimize') win.minimize();
+    else if (action === 'toggle-maximize') {
+      if (win.isFullScreen()) win.setFullScreen(false);
+      else if (win.isMaximized()) win.unmaximize();
+      else win.maximize();
+    } else if (action === 'close') win.close();
   });
   ipcMain.handle('app:info', (e) =>
     isTrusted(e) ? { version: app.getVersion(), electron: process.versions.electron, platform: process.platform } : null,
@@ -366,6 +413,18 @@ app.whenReady().then(async () => {
   const dir = findLibrary();
   if (dir) startWorker(dir).catch((e) => console.error('library open failed', e));
   createWindow();
+  sync = new OriginalSync({
+    settings,
+    getLibraryPath: () => libraryPath,
+    send: (ev) => win?.webContents.send('sync-event', ev),
+    onLibraryChanged: async (report) => {
+      await callWorker('reload', []).catch(() => {});
+      win?.webContents.send('library-changed', { added: report.added, updated: report.updated, removed: report.removed });
+    },
+    javaDir: app.isPackaged ? path.join(process.resourcesPath, 'java') : path.join(SRC, '..', 'vendor', 'java'),
+    workerFile: path.join(__dirname, 'sync-worker.js').replace(`app.asar${path.sep}`, `app.asar.unpacked${path.sep}`),
+  });
+  sync.start();
   app.on('activate', () => {
     if (!BrowserWindow.getAllWindows().length) createWindow();
   });
@@ -377,6 +436,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
+  sync?.stop();
   settings.flush();
   stopWorker();
 });

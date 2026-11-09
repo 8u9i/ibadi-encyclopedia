@@ -8,8 +8,9 @@ export class SettingsView {
     this.render();
   }
 
-  onShow() {
-    this.render();
+  async onShow(arg) {
+    await this.render();
+    if (arg?.section === 'sync') this.syncCard?.scrollIntoView({ block: 'start' });
   }
 
   async render() {
@@ -116,6 +117,7 @@ export class SettingsView {
           ? row('المحتوى', `بُنيت في ${info.built_at ? new Date(info.built_at).toLocaleDateString('ar') : '—'} من الإصدار ${info.source_label || '—'}`, h('span', { class: 'muted num', text: `${num(Number(info.books))} كتابًا · ${num(Number(info.pages))} صفحة` }))
           : null,
       ),
+      (this.syncCard = h('div', { class: 'set-card', id: 'sync' })),
       h(
         'div',
         { class: 'set-card' },
@@ -124,7 +126,58 @@ export class SettingsView {
         row('الموقع', 'ibadi.net', h('button', { class: 'btn ghost', onclick: () => window.ibadi.openExternal('https://ibadi.net') }, icon('external'), 'زيارة')),
       ),
     );
+    this.renderSync();
   }
 
   syncPreview() {}
+
+  onSyncEvent(ev) {
+    if (!this.el.hidden) this.renderSync(ev);
+  }
+
+  /** "Update from the original app": where it is, whether it runs automatically, and what happened last. */
+  async renderSync(ev) {
+    const card = this.syncCard;
+    if (!card) return;
+    const st = await window.ibadi.sync.status();
+    if (!st) return;
+    const row = (label, hint, control) => h('div', { class: 'set-row' }, h('div', { class: 'lbl' }, label, hint ? h('small', { text: hint }) : null), control);
+    const choose = h('button', { class: 'btn' }, icon('folder'), st.root ? 'تغيير' : 'تحديد المجلّد');
+    choose.addEventListener('click', async () => {
+      const r = await window.ibadi.sync.choose();
+      if (r?.ok) toast('رُبط البرنامج الأصلي');
+      else if (r && !r.canceled) toast(r.error, 'error');
+      this.renderSync();
+    });
+    const auto = h('input', { type: 'checkbox', checked: !!st.auto, 'aria-label': 'التحديث التلقائي' });
+    auto.addEventListener('change', () => window.ibadi.sync.setAuto(auto.checked));
+    const now = h('button', { class: 'btn primary', disabled: !st.root || st.running }, icon('history'), st.running ? 'جارٍ التحديث…' : 'تحديث الآن');
+    now.addEventListener('click', async () => {
+      await window.ibadi.sync.run();
+      this.renderSync();
+    });
+
+    let state;
+    if (st.running) {
+      const msg = (ev && ev.message) || st.progress?.message || 'جارٍ التحديث';
+      state = h('span', { class: 'muted', style: { display: 'inline-flex', gap: '8px', alignItems: 'center' } }, h('span', { class: 'spinner' }), msg);
+    } else if (st.error) state = h('span', { style: { color: 'var(--danger)' }, text: st.error });
+    else if (st.last) {
+      const when = new Intl.DateTimeFormat('ar', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(st.last.at));
+      const bits = [`أُضيف ${num(st.last.added)}`, `حُدِّث ${num(st.last.updated)}`];
+      if (st.last.removed) bits.push(`أُزيل ${num(st.last.removed)}`);
+      state = h('span', { class: 'muted', text: `${when} · ${bits.join('، ')}` });
+    } else state = h('span', { class: 'faint', text: st.root ? 'لم يُجرَ تحديث بعد' : '—' });
+
+    // Optional rows are null; native replaceChildren would print them as "null", so filter first.
+    card.replaceChildren(...[
+      h('h2', { text: 'التحديث من البرنامج الأصلي' }),
+      h('p', { class: 'muted', style: { margin: '6px 0 4px', fontSize: '13px', lineHeight: 1.8 }, text: 'عندما يُنزّل البرنامج الأصلي كتبًا جديدة أو محدَّثة، تُنقل إلى هذه المكتبة تلقائيًا. افتح البرنامج الأصلي ودعه يحدّث نفسه، وسيلتقط هذا البرنامج التغييرات خلال دقيقتين.' }),
+      row('مجلّد البرنامج الأصلي', st.root || 'لم يُعثر عليه بعد. يُكتشف تلقائيًا عند تشغيل البرنامج الأصلي، أو حدّد مجلّد تثبيته.', choose),
+      st.root && st.java === false ? row('Java', 'لم يُعثر على مجلّد jre في البرنامج الأصلي؛ ثبّت Java 21 أو أحدث.', h('span')) : null,
+      row('التحديث التلقائي', 'يتحقّق كل دقيقة دون إبطاء القراءة', auto),
+      row('آخر تحديث', st.changed && !st.running ? 'في البرنامج الأصلي تغييرات لم تُنقل بعد' : null, state),
+      h('div', { class: 'set-row' }, h('span', { style: { flex: 1 } }), now),
+    ].filter(Boolean));
+  }
 }

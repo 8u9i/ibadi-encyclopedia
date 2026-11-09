@@ -43,6 +43,9 @@ for (const s of steps) {
     const r = await send('Page.captureScreenshot', { format: 'png' });
     fs.writeFileSync(s.shot, Buffer.from(r.result.data, 'base64'));
     console.log('shot>', s.shot);
+  } else if (s.cmd) {
+    const r = await send(s.cmd, s.params || {});
+    if (r.error) console.log('cmd>', s.cmd, 'ERROR', r.error.message);
   } else if (s.wait) await new Promise((r) => setTimeout(r, s.wait));
   else if (s.key) {
     for (const type of ['keyDown', 'keyUp']) await send('Input.dispatchKeyEvent', { type, key: s.key, code: s.key, windowsVirtualKeyCode: s.vk || 0, modifiers: s.mod || 0 });

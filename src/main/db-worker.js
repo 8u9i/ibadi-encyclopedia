@@ -13,11 +13,12 @@ let covers = null;
 let user;
 
 function openAll() {
-  db = new DatabaseSync(path.join(libraryPath, 'ibadi.db'), { readOnly: true });
+  // timeout: wait (instead of failing) while a sync briefly locks the file to commit
+  db = new DatabaseSync(path.join(libraryPath, 'ibadi.db'), { readOnly: true, timeout: 15000 });
   db.exec('PRAGMA cache_size = -16000; PRAGMA temp_store = MEMORY; PRAGMA query_only = 1;');
   const cpath = path.join(libraryPath, 'covers.db');
   if (fs.existsSync(cpath)) {
-    covers = new DatabaseSync(cpath, { readOnly: true });
+    covers = new DatabaseSync(cpath, { readOnly: true, timeout: 15000 });
     covers.exec('PRAGMA cache_size = -2000;');
   }
   fs.mkdirSync(path.dirname(userDbPath), { recursive: true });
@@ -213,6 +214,13 @@ const now = () => Date.now();
 
 // ------------------------------------------------------------------ API
 const api = {
+  /** Called after a sync changed the library: drop in-memory caches derived from it. */
+  reload() {
+    bookNames.clear();
+    rangesCache = null;
+    return true;
+  },
+
   info() {
     const info = Object.fromEntries(db.prepare('SELECT key, value FROM info').all().map((r) => [r.key, r.value]));
     info.hasCovers = !!covers;

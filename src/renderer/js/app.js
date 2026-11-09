@@ -1,4 +1,4 @@
-import { h, icon, clear, modal, toast, coverEl, debounce, setDigitStyle, deathLabel, logo, fillIcons } from './dom.js';
+import { h, icon, clear, modal, toast, coverEl, debounce, setDigitStyle, deathLabel, logo, fillIcons, num } from './dom.js';
 import { LibraryView } from './views/library.js';
 import { SearchView } from './views/search.js';
 import { QuranView } from './views/quran.js';
@@ -50,7 +50,7 @@ class App {
     this.favorites = new Set();
     this.views = document.getElementById('views');
     this.tabsEl = document.getElementById('tabs');
-    this.rail = document.getElementById('rail');
+    this.sectionsEl = document.getElementById('sections');
     this.media = matchMedia('(prefers-color-scheme: dark)');
     this.media.addEventListener('change', () => this.applySettings());
   }
@@ -60,10 +60,11 @@ class App {
     const stored = await api.settings.all();
     this.settings = { ...DEFAULTS, ...stored };
     this.applySettings();
-    this.buildRail();
-    document.getElementById('quick-open').addEventListener('click', () => this.palette());
+    this.buildTitlebar();
     this.bindKeys();
     api.onMenu((action, arg) => this.onMenu(action, arg));
+    api.sync.onEvent((ev) => this.onSyncEvent(ev));
+    api.sync.onLibraryChanged((ev) => this.onLibraryChanged(ev));
 
     const status = await api.library.status();
     if (!status?.ok) {
@@ -113,20 +114,81 @@ class App {
     root.style.setProperty('--read-leading', String(s.readLeading));
     root.style.setProperty('--read-width', `${s.readWidth}px`);
     setDigitStyle(s.arabicDigits);
+    this.updateThemeButton();
   }
 
   // -------------------------------------------------------------- navigation
-  buildRail() {
-    clear(this.rail);
-    this.rail.append(h('div', { class: 'brand', title: 'الموسوعة الإباضية' }, logo()));
+  /** One bar replaces the OS title bar, the section rail and the tab strip. */
+  buildTitlebar() {
+    const brand = document.getElementById('brand');
+    clear(brand).append(logo(), h('span', { class: 'wordmark', text: 'الموسوعة الإباضية' }));
+
+    clear(this.sectionsEl);
     for (const s of SECTIONS) {
-      if (s.id === 'settings') this.rail.append(h('div', { class: 'spacer' }));
-      this.rail.append(
-        h('button', { dataset: { section: s.id }, title: s.label, onclick: () => this.go(s.id) }, icon(s.icon), h('span', { text: s.label })),
+      if (s.id === 'settings') continue;
+      this.sectionsEl.append(
+        h('button', { class: 'sec', dataset: { section: s.id }, title: `${s.label} (Alt+${SECTIONS.indexOf(s) + 1})`, onclick: () => this.go(s.id) }, icon(s.icon), h('span', { class: 'sec-label', text: s.label })),
       );
     }
-    const theme = h('button', { title: 'تبديل المظهر', onclick: () => this.cycleTheme() }, icon('moon'), h('span', { text: 'المظهر' }));
-    this.rail.append(theme);
+
+    const tools = document.getElementById('tools');
+    this.themeBtn = h('button', { class: 'tb-btn', onclick: () => this.cycleTheme() });
+    this.settingsBtn = h('button', { class: 'tb-btn', dataset: { section: 'settings' }, title: 'الإعدادات (Alt+6)', 'aria-label': 'الإعدادات', onclick: () => this.go('settings') }, icon('settings'));
+    this.syncChip = h('button', { class: 'tb-sync', hidden: true, onclick: () => this.go('settings', { section: 'sync' }) }, h('span', { class: 'spinner' }), h('span', { class: 'tb-sync-label', text: 'تحديث الكتب…' }));
+    clear(tools).append(
+      this.syncChip,
+      h('button', { class: 'tb-find', title: 'بحث سريع عن كتاب أو مؤلف (Ctrl+K)', onclick: () => this.palette() }, icon('search'), h('span', { class: 'tb-find-label', text: 'كتاب أو مؤلف…' }), h('kbd', { text: 'Ctrl K' })),
+      this.themeBtn,
+      this.settingsBtn,
+    );
+    this.updateThemeButton();
+
+    this.buildWindowControls();
+  }
+
+  async buildWindowControls() {
+    const box = document.getElementById('win-controls');
+    const state = await api.window.state();
+    const app = document.getElementById('app');
+    app.dataset.platform = state?.platform || '';
+    if (!state || state.platform === 'darwin') return; // macOS keeps its native traffic lights
+    const glyph = (d) => {
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 10 10');
+      svg.setAttribute('aria-hidden', 'true');
+      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', d);
+      svg.append(p);
+      return svg;
+    };
+    const MIN = 'M0 5.5h10';
+    const MAX = 'M.5.5h9v9h-9z';
+    const RESTORE = 'M2.5 2.5h7v7h-7zM2.5 2.5V.5h7v7h-2';
+    const CLOSE = 'M.5.5l9 9M9.5.5l-9 9';
+    const min = h('button', { class: 'wc', title: 'تصغير', 'aria-label': 'تصغير', onclick: () => api.window.minimize() }, glyph(MIN));
+    const max = h('button', { class: 'wc', onclick: () => api.window.toggleMaximize() });
+    const close = h('button', { class: 'wc wc-close', title: 'إغلاق', 'aria-label': 'إغلاق', onclick: () => api.window.close() }, glyph(CLOSE));
+    clear(box).append(min, max, close);
+    const apply = (s) => {
+      if (!s) return;
+      const label = s.maximized || s.fullscreen ? 'استعادة الحجم' : 'تكبير';
+      max.replaceChildren(glyph(s.maximized || s.fullscreen ? RESTORE : MAX));
+      max.title = label;
+      max.setAttribute('aria-label', label);
+      app.classList.toggle('is-maximized', !!s.maximized);
+      app.classList.toggle('is-blurred', !s.focused);
+    };
+    apply(state);
+    api.window.onState(apply);
+  }
+
+  updateThemeButton() {
+    if (!this.themeBtn) return;
+    const cur = document.documentElement.dataset.theme;
+    const names = { light: 'الورق الفاتح', sepia: 'الرَّقّ', dark: 'السراج (داكن)' };
+    this.themeBtn.replaceChildren(icon(cur === 'dark' ? 'moon' : 'sun'));
+    this.themeBtn.title = `المظهر: ${names[cur] || ''} — انقر للتبديل`;
+    this.themeBtn.setAttribute('aria-label', 'تبديل المظهر');
   }
 
   cycleTheme() {
@@ -134,7 +196,49 @@ class App {
     const cur = document.documentElement.dataset.theme;
     const next = order[(order.indexOf(cur) + 1) % order.length];
     this.setSetting('theme', next);
-    toast({ light: 'المظهر الفاتح', sepia: 'المظهر الورقي', dark: 'المظهر الداكن' }[next]);
+    toast({ light: 'المظهر: الورق الفاتح', sepia: 'المظهر: الرَّقّ', dark: 'المظهر: السراج' }[next]);
+  }
+
+  // -------------------------------------------------------------- sync with the original app
+  onSyncEvent(ev) {
+    const running = ev.phase !== 'done' && ev.phase !== 'error';
+    if (this.syncChip) {
+      this.syncChip.hidden = !running;
+      this.syncChip.title = ev.message || '';
+      this.syncChip.querySelector('.tb-sync-label').textContent = ev.message ? ev.message.replace(/^(.{0,28}).*$/, '$1') : 'تحديث الكتب…';
+    }
+    if (ev.phase === 'error') toast('تعذّر التحديث من البرنامج الأصلي: ' + ev.message, 'error');
+    this.sections.get('settings')?.onSyncEvent?.(ev);
+  }
+
+  async onLibraryChanged({ added = [], updated = [], removed = [] }) {
+    const [books, cats] = await Promise.all([this.db('books'), this.db('categories')]);
+    this.books = books;
+    this.bookMap = new Map(books.map((b) => [b.id, b]));
+    this.categories = cats;
+    this.catMap = new Map(cats.map((c) => [c.id, c]));
+    // Open books whose text changed are reopened at the same page; removed books are closed.
+    for (const t of [...this.tabs]) {
+      if (removed.includes(t.bookId) || !this.bookMap.has(t.bookId)) this.closeTab(t.id);
+      else if (updated.includes(t.bookId)) t.view.reloadBook?.();
+    }
+    this.sections.get('library')?.refreshData?.();
+    const authors = this.sections.get('authors');
+    if (authors) authors.authors = null;
+    const parts = [];
+    if (added.length) parts.push(`أُضيف ${num(added.length)} كتاب`);
+    if (updated.length) parts.push(`حُدِّث ${num(updated.length)}`);
+    if (removed.length) parts.push(`أُزيل ${num(removed.length)}`);
+    if (parts.length) toast(parts.join('، ') + ' من البرنامج الأصلي');
+  }
+
+  markNav() {
+    const onSection = this.active === 'section';
+    for (const b of document.querySelectorAll('#titlebar [data-section]')) {
+      const cur = onSection && b.dataset.section === this.section;
+      if (cur) b.setAttribute('aria-current', 'page');
+      else b.removeAttribute('aria-current');
+    }
   }
 
   go(sectionId, arg) {
@@ -155,7 +259,6 @@ class App {
       this.sections.set(sectionId, view);
     }
     this.section = sectionId;
-    for (const b of this.rail.querySelectorAll('button[data-section]')) b.setAttribute('aria-current', String(b.dataset.section === sectionId));
     this.activate('section');
     view.onShow?.(arg);
   }
@@ -170,37 +273,38 @@ class App {
       if (on) t.view.onShow?.();
       else t.view.onHide?.();
     }
-    if (id !== 'section') for (const b of this.rail.querySelectorAll('button[data-section]')) b.setAttribute('aria-current', 'false');
-    else for (const b of this.rail.querySelectorAll('button[data-section]')) b.setAttribute('aria-current', String(b.dataset.section === this.section));
+    this.markNav();
     this.renderTabs();
   }
 
+  /** Open books as tabs. Each tab is a pair of sibling buttons (open, close): buttons never nest. */
   renderTabs() {
     clear(this.tabsEl);
-    const sec = SECTIONS.find((s) => s.id === this.section) || { icon: 'library', label: 'البداية' };
-    this.tabsEl.append(
-      h('button', { class: 'tab', role: 'tab', 'aria-selected': String(this.active === 'section'), onclick: () => this.activate('section') }, icon(sec.icon), h('span', { class: 'label', text: sec.label })),
-    );
+    this.tabsEl.hidden = !this.tabs.length;
     for (const t of this.tabs) {
-      const close = h('button', { class: 'close', title: 'إغلاق (Ctrl+W)', 'aria-label': 'إغلاق' }, icon('close'));
-      close.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.closeTab(t.id);
-      });
-      const tab = h(
+      const selected = this.active === t.id;
+      const open = h(
         'button',
-        { class: 'tab', role: 'tab', title: t.title, 'aria-selected': String(this.active === t.id), onclick: () => this.activate(t.id) },
-        icon('page'),
-        h('span', { class: 'label', text: t.title }),
-        close,
+        { class: 'tab-open', role: 'tab', title: t.title, 'aria-selected': String(selected), tabindex: selected ? '0' : '-1', onclick: () => this.activate(t.id) },
+        h('span', { class: 'tab-label', text: t.title }),
       );
+      const close = h('button', { class: 'tab-close', title: 'إغلاق الكتاب (Ctrl+W)', 'aria-label': `إغلاق ${t.title}`, onclick: () => this.closeTab(t.id) }, icon('close'));
+      const tab = h('div', { class: 'tab' + (selected ? ' is-selected' : '') }, open, close);
       tab.addEventListener('auxclick', (e) => {
         if (e.button === 1) this.closeTab(t.id);
       });
+      open.addEventListener('keydown', (e) => {
+        // Arrow keys move between tabs (mirrored for RTL), per the tablist pattern.
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        e.preventDefault();
+        e.stopPropagation();
+        const list = [...this.tabsEl.querySelectorAll('.tab-open')];
+        const i = list.indexOf(open) + (e.key === 'ArrowLeft' ? 1 : -1);
+        list[(i + list.length) % list.length]?.focus();
+      });
       this.tabsEl.append(tab);
     }
-    const sel = this.tabsEl.querySelector('[aria-selected="true"]');
-    sel?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    this.tabsEl.querySelector('.is-selected')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }
 
   /**

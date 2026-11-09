@@ -144,9 +144,10 @@ export function pageLabel(part, num_, parts) {
 }
 
 // ------------------------------------------------------------------ covers
+// Bookcloth colours for books without a scanned cover: muted, ink-heavy bindings.
 const PALETTE = [
-  ['#0f6e5a', '#0a4d3f'], ['#7a3b2e', '#55281f'], ['#2f4f7f', '#1f3557'], ['#6b4f1d', '#4a3613'],
-  ['#4f3a6b', '#36284a'], ['#285e61', '#1b4144'], ['#7b2d4f', '#561f37'], ['#3d5a2a', '#2a3e1d'],
+  ['#7d2e24', '#5c1f18'], ['#2b3a52', '#1c2638'], ['#4a5230', '#323820'], ['#6a4423', '#4a2e16'],
+  ['#5a2a35', '#3e1c24'], ['#2f4a48', '#1f3331'], ['#3b3530', '#27231f'], ['#6e5a2a', '#4d3e1c'],
 ];
 
 export function placeholderCover(name, author, small = false) {

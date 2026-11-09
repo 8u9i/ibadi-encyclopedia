@@ -59,6 +59,15 @@ export class LibraryView {
     this.renderRecent();
   }
 
+  /** The book list changed (sync added, updated or removed books). */
+  refreshData() {
+    this.norm = new Map(this.app.books.map((b) => [b.id, normalize(`${b.name} ${b.author || ''}`)]));
+    if (this.cat !== 'all' && this.cat !== 'fav' && !this.app.catMap.has(Number(this.cat))) this.cat = 'all';
+    this.renderSide();
+    this.apply();
+    this.renderRecent();
+  }
+
   onFavoritesChanged() {
     if (this.cat === 'fav') this.apply();
     else for (const b of this.body.querySelectorAll('.fav')) b.setAttribute('aria-pressed', String(this.app.isFavorite(Number(b.dataset.id))));

@@ -119,6 +119,18 @@ export class ReaderView {
     if (this.current) this.app.db('userSavePosition', this.bookId, this.current.pid).catch(() => {});
   }
 
+  /** The book's text was updated by a sync: reload it at the same page id. */
+  reloadBook() {
+    const loc = this.current ? { pid: this.current.pid } : { index: 1 };
+    this.book = null;
+    this.toc = null;
+    this.meta = this.app.bookMap.get(this.bookId) || this.meta;
+    this.titleEl.textContent = this.meta.name;
+    if (this.el.hidden) this.deferredLoc = loc;
+    else this.open(loc);
+    if (this.panel) this.renderPanel();
+  }
+
   async open(loc, hl) {
     this.scroll.replaceChildren(spinnerRow());
     try {

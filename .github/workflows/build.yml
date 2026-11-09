@@ -22,9 +22,9 @@ jobs:
             target: --linux
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -32,7 +32,16 @@ jobs:
       - run: npm ci
 
       - name: Build
-        run: npx electron-builder ${{ matrix.target }} --publish never
+        shell: bash
+        # Unset secrets arrive as empty strings; electron-builder would then try to read an empty
+        # CSC_LINK as a certificate path. Remove empty signing variables so unsigned builds work.
+        run: |
+          for v in CSC_LINK CSC_KEY_PASSWORD APPLE_ID APPLE_APP_SPECIFIC_PASSWORD APPLE_TEAM_ID; do
+            if [ -z "${!v}" ]; then unset "$v"; fi
+          done
+          if [ -z "${CSC_LINK:-}" ]; then export CSC_IDENTITY_AUTO_DISCOVERY=false; fi
+          node tools/fetch-lucene.mjs
+          npx electron-builder ${{ matrix.target }} --publish never
         env:
           # Optional code signing. Leave the secrets unset to produce unsigned builds.
           # Windows: a .pfx (base64) + password, see https://www.electron.build/code-signing
@@ -42,9 +51,8 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          CSC_IDENTITY_AUTO_DISCOVERY: ${{ secrets.CSC_LINK != '' }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: installers-${{ matrix.os }}
           path: |

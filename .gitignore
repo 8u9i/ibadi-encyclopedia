@@ -4,3 +4,4 @@ tmp/
 tools/lucene/build/
 tools/lucene/lib/
 *.log
+vendor/java/*.jar

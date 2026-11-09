@@ -1,7 +1,7 @@
 {
   "name": "ibadi-encyclopedia",
   "productName": "Ibadi Encyclopedia",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "الموسوعة الإباضية — مكتبة إلكترونية للقراءة والبحث في الكتب",
   "author": "Ibadi Encyclopedia",
   "homepage": "https://ibadi.net",
@@ -12,11 +12,12 @@
     "start": "electron .",
     "test": "node tools/run-electron-node.mjs tools/smoke-test.mjs",
     "icon": "electron tools/make-icon.mjs",
-    "dist:win": "electron-builder --win",
-    "dist:mac": "electron-builder --mac",
-    "dist:linux": "electron-builder --linux",
-    "dist:dir": "electron-builder --dir",
-    "convert": "node tools/convert.mjs"
+    "dist:win": "node tools/fetch-lucene.mjs && electron-builder --win",
+    "dist:mac": "node tools/fetch-lucene.mjs && electron-builder --mac",
+    "dist:linux": "node tools/fetch-lucene.mjs && electron-builder --linux",
+    "dist:dir": "node tools/fetch-lucene.mjs && electron-builder --dir",
+    "convert": "node tools/convert.mjs",
+    "fetch-lucene": "node tools/fetch-lucene.mjs"
   },
   "devDependencies": {
     "electron": "44.9.3",
@@ -38,6 +39,7 @@
     "asar": true,
     "asarUnpack": [
       "src/main/db-worker.js",
+      "src/main/sync-worker.js",
       "src/shared/**"
     ],
     "compression": "maximum",
@@ -152,6 +154,16 @@
         }
       },
       "artifactName": "Ibadi-Encyclopedia-${version}-linux-${arch}.${ext}"
-    }
+    },
+    "extraResources": [
+      {
+        "from": "vendor/java",
+        "to": "java",
+        "filter": [
+          "*.jar",
+          "*.class"
+        ]
+      }
+    ]
   }
 }

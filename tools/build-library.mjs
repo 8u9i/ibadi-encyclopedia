@@ -112,6 +112,10 @@ async function buildMain() {
     CREATE INDEX ix_pdf_file ON pdf_file(book_id, file_ord);
     CREATE UNIQUE INDEX ix_pdf_map ON pdf_map(book_id, reader_page);
   `);
+  // Per-book versions as held on disk by the original app; sync compares against this snapshot.
+  db.exec(`CREATE TABLE src_book (id INTEGER PRIMARY KEY, major INTEGER, minor INTEGER);
+           INSERT INTO src_book SELECT book_id, IFNULL(major_ondisk, 0), IFNULL(minor_ondisk, 0)
+             FROM m.book WHERE IFNULL(hidden, 0) = 0 AND IFNULL(major_ondisk, 0) > 0;`);
   const bookIds = db.prepare('SELECT id FROM book ORDER BY id').all().map((r) => r.id);
   log(`books: ${bookIds.length}`);
 

@@ -96,11 +96,14 @@ export class QuranView {
       n > 1 ? h('button', { class: 'btn', onclick: () => this.showSura(n - 1) }, icon('chevronRight'), `سورة ${SURA_NAMES[n - 2]}`) : h('span'),
       n < 114 ? h('button', { class: 'btn', onclick: () => this.showSura(n + 1) }, `سورة ${SURA_NAMES[n]}`, icon('chevronLeft')) : h('span'),
     );
+    // Native append() would print a null child as the text "null", so optional parts are filtered.
     clear(this.pane).append(
-      h('div', { class: 'q-head' }, h('h2', { text: `سورة ${SURA_NAMES[n - 1]}` }), h('div', { class: 'sub', text: `${num(ayat.length)} آية` })),
-      n !== 1 && n !== 9 ? h('div', { class: 'basmala', text: BASMALA }) : null,
-      text,
-      nav,
+      ...[
+        h('div', { class: 'q-head' }, h('h2', { text: `سورة ${SURA_NAMES[n - 1]}` }), h('div', { class: 'sub', text: `${num(ayat.length)} آية` })),
+        n !== 1 && n !== 9 ? h('div', { class: 'basmala', text: BASMALA }) : null,
+        text,
+        nav,
+      ].filter(Boolean),
     );
     this.scroller.scrollTop = 0;
     this.tafsir.hidden = true;

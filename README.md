@@ -14,6 +14,7 @@ an RTL-first Arabic interface, fast full-text search, and low memory use.
 
 ## Features
 
+- **Interface**: an "ink & rubric" design drawn from the Omani manuscript tradition: warm paper, carbon-ink text, and red rubrication for headings, with paper, parchment and lamp (dark) themes. A single custom title bar holds the sections, the open books as tabs, quick open, and custom minimize, maximize and close buttons on the left edge (mirrored RTL). The native frame behaviour is kept: Windows 11 rounded corners, snapping and edge resizing. macOS keeps its traffic-light buttons.
 - **Library**: 2,931 books in 46 categories, cover grid or list, instant filtering by title/author (diacritic-insensitive), sorting, favorites, "continue reading".
 - **Reader**: single-page or continuous scrolling, nested table of contents that follows your position, breadcrumbs, printed volume/page numbers, go-to-page (printed or sequential), clickable footnotes (both directions), styled Qur'an quotations ﴿ ﴾, bookmarks with notes, reading position remembered, open tabs restored on restart, copy with citation, scanned PDF page link (online, when available).
 - **Search**: whole library or a scope (categories and/or chosen books); all words / any word / exact phrase / **root** (e.g. «كتب» → كتاب، مكتوب، الكاتب…); flexible matching of proclitics (و، ف، ب، ك، ل، ال); prefix `*`; footnotes on or off; headings-only search; book order or relevance; per-book result counts; search history.
@@ -72,6 +73,17 @@ macOS and Linux packages must be built on those systems. `.github/workflows/buil
 The library is too large for an installer, and keeping it separate lets content updates ship on their own. Distribute it as a separate download and either:
 - put it next to the installed app as a folder named `library`, or
 - let users choose it on first run (the choice is remembered).
+
+## Updates from the original app
+
+When the original Ibadi Encyclopedia downloads new or updated books, this app picks them up on its own. Nothing is fetched from the internet by this app.
+
+- **Finding the original**: the folder chosen in Settings, otherwise `X:\ibadi` on any drive, otherwise the folder of the original's `ibadi.exe` while it is running (remembered once found).
+- **Detecting changes**: checks every minute whether `master.db` or the Lucene commit has changed, and waits one more check for the original to finish writing.
+- **Finding what changed**: compares each book's on-disk version (`major_ondisk`/`minor_ondisk`) with a snapshot kept in `ibadi.db` (`src_book`). Books the original hides or drops are removed. Books that are listed but not downloaded (a "light" install) are kept.
+- **Applying**: exports only the changed books' text with the original's own Java runtime (`app\win\64\jre`) and the bundled Lucene reader, about a second per batch. It then updates pages, headings, full-text and root indexes, metadata and covers in place. Open books reload at the same page.
+
+The library folder must be writable. You can also start an update from Settings → «التحديث من البرنامج الأصلي».
 
 ## Windows Defender and SmartScreen
 
