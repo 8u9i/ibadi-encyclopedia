@@ -1,0 +1,6 @@
+node_modules/
+dist/
+tmp/
+tools/lucene/build/
+tools/lucene/lib/
+*.log

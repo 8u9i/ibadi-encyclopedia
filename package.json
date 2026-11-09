@@ -1,0 +1,157 @@
+{
+  "name": "ibadi-encyclopedia",
+  "productName": "Ibadi Encyclopedia",
+  "version": "2.0.0",
+  "description": "الموسوعة الإباضية — مكتبة إلكترونية للقراءة والبحث في الكتب",
+  "author": "Ibadi Encyclopedia",
+  "homepage": "https://ibadi.net",
+  "private": true,
+  "type": "module",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node tools/run-electron-node.mjs tools/smoke-test.mjs",
+    "icon": "electron tools/make-icon.mjs",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux",
+    "dist:dir": "electron-builder --dir",
+    "convert": "node tools/convert.mjs"
+  },
+  "devDependencies": {
+    "electron": "44.9.3",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "net.ibadi.encyclopedia",
+    "productName": "Ibadi Encyclopedia",
+    "copyright": "الموسوعة الإباضية",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "package.json",
+      "src/**/*",
+      "build/icon.png"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "src/main/db-worker.js",
+      "src/shared/**"
+    ],
+    "compression": "maximum",
+    "electronLanguages": [
+      "ar",
+      "en-US"
+    ],
+    "electronFuses": {
+      "runAsNode": false,
+      "enableCookieEncryption": true,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true,
+      "grantFileProtocolExtraPrivileges": false
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "requestedExecutionLevel": "asInvoker",
+      "legalTrademarks": "الموسوعة الإباضية",
+      "artifactName": "Ibadi-Encyclopedia-${version}-win-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "الموسوعة الإباضية",
+      "uninstallDisplayName": "الموسوعة الإباضية",
+      "installerLanguages": [
+        "ar_SA",
+        "en_US"
+      ],
+      "language": "1025",
+      "unicode": true,
+      "deleteAppDataOnUninstall": false,
+      "buildUniversalInstaller": false,
+      "artifactName": "Ibadi-Encyclopedia-Setup-${version}-${arch}.${ext}"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "public.app-category.reference",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "darkModeSupport": true,
+      "artifactName": "Ibadi-Encyclopedia-${version}-mac-${arch}.${ext}"
+    },
+    "dmg": {
+      "title": "Ibadi Encyclopedia ${version}"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "Education",
+      "synopsis": "Ibadi Encyclopedia — Arabic digital library reader",
+      "maintainer": "Ibadi Encyclopedia",
+      "executableName": "ibadi-encyclopedia",
+      "desktop": {
+        "entry": {
+          "Name": "Ibadi Encyclopedia",
+          "Name[ar]": "الموسوعة الإباضية",
+          "Comment[ar]": "قراءة كتب الموسوعة الإباضية والبحث فيها",
+          "StartupWMClass": "Ibadi Encyclopedia"
+        }
+      },
+      "artifactName": "Ibadi-Encyclopedia-${version}-linux-${arch}.${ext}"
+    }
+  }
+}

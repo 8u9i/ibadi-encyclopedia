@@ -1,0 +1,387 @@
+import { app, BrowserWindow, Menu, dialog, ipcMain, nativeTheme, net, protocol, shell, clipboard } from 'electron';
+import { Worker } from 'node:worker_threads';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { Settings } from './settings.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const SRC = path.join(__dirname, '..'); // …/src
+const RENDERER = path.join(SRC, 'renderer');
+const SHARED = path.join(SRC, 'shared');
+const APP_ORIGIN = 'app://ui';
+
+// ------------------------------------------------------------------ process-level setup
+app.setName('Ibadi Encyclopedia');
+if (process.platform === 'win32') app.setAppUserModelId('net.ibadi.encyclopedia');
+if (!app.requestSingleInstanceLock()) app.exit(0);
+
+// Keep memory low: one renderer, no spare renderer process, no unused Chromium services.
+app.commandLine.appendSwitch('disable-features', 'SpareRendererForSitePerProcess,MediaRouter,Translate,AutofillServerCommunication');
+
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'app', privileges: { standard: true, secure: true, supportFetchAPI: true, codeCache: true } },
+]);
+
+const settings = new Settings(path.join(app.getPath('userData'), 'settings.json'));
+// A text reader gains little from GPU compositing, while the GPU process costs ~150 MB of RAM.
+// Users can turn acceleration back on in Settings (takes effect after a restart).
+if (!settings.get('hardwareAcceleration', false)) app.disableHardwareAcceleration();
+let win = null;
+let worker = null;
+let workerReady = null;
+let libraryPath = null;
+
+// ------------------------------------------------------------------ library location
+function isLibrary(dir) {
+  try {
+    return !!dir && fs.statSync(path.join(dir, 'ibadi.db')).isFile();
+  } catch {
+    return false;
+  }
+}
+
+function findLibrary() {
+  const exeDir = path.dirname(app.getPath('exe'));
+  const candidates = [
+    settings.get('libraryPath'),
+    process.env.IBADI_LIBRARY,
+    path.join(process.resourcesPath || '', 'library'),
+    path.join(exeDir, 'library'),
+    process.platform === 'darwin' ? path.join(exeDir, '..', '..', '..', 'library') : null, // next to the .app
+    path.join(app.getPath('userData'), 'library'),
+    path.join(app.getPath('documents'), 'Ibadi', 'library'),
+    app.isPackaged ? null : path.join(SRC, '..', '..', 'library'),
+  ];
+  return candidates.find(isLibrary) || null;
+}
+
+// ------------------------------------------------------------------ database worker
+let seq = 0;
+const pending = new Map();
+
+function startWorker(dir) {
+  stopWorker();
+  libraryPath = dir;
+  // The worker (and the shared module it imports) is unpacked from app.asar by the build config,
+  // so worker_threads loads it from a real directory.
+  const workerFile = path.join(__dirname, 'db-worker.js').replace(`app.asar${path.sep}`, `app.asar.unpacked${path.sep}`);
+  worker = new Worker(workerFile, {
+    workerData: { libraryPath: dir, userDbPath: path.join(app.getPath('userData'), 'user.db') },
+    resourceLimits: { maxOldGenerationSizeMb: 256 },
+  });
+  workerReady = new Promise((resolve, reject) => {
+    worker.once('message', (m) => (m && m.ready ? resolve(m.info) : reject(new Error(m?.error || 'worker failed'))));
+    worker.once('error', reject);
+  });
+  worker.on('message', (m) => {
+    if (!m || m.id == null) return;
+    const p = pending.get(m.id);
+    if (!p) return;
+    pending.delete(m.id);
+    if (m.error) p.reject(new Error(m.error));
+    else p.resolve(m.result);
+  });
+  worker.on('error', (e) => console.error('db worker error', e));
+  worker.on('exit', (code) => {
+    for (const p of pending.values()) p.reject(new Error('db worker exited ' + code));
+    pending.clear();
+    worker = null;
+  });
+  return workerReady;
+}
+
+function stopWorker() {
+  if (worker) worker.terminate();
+  worker = null;
+  workerReady = null;
+}
+
+async function callWorker(method, args) {
+  if (!worker) throw new Error('NO_LIBRARY');
+  await workerReady;
+  return new Promise((resolve, reject) => {
+    const id = ++seq;
+    pending.set(id, { resolve, reject });
+    worker.postMessage({ id, method, args });
+  });
+}
+
+// ------------------------------------------------------------------ protocol: app://ui/… (UI files), app://cover/<id>
+async function serveFile(root, rel) {
+  const file = path.normalize(path.join(root, rel));
+  if (!file.startsWith(root + path.sep)) return new Response('forbidden', { status: 403 });
+  const res = await net.fetch(pathToFileURL(file).toString());
+  // UI files must never be served stale from Chromium's HTTP cache (e.g. after an update).
+  const headers = new Headers(res.headers);
+  headers.set('cache-control', 'no-cache');
+  return new Response(res.body, { status: res.status, headers });
+}
+
+function registerProtocol() {
+  protocol.handle('app', async (request) => {
+    const url = new URL(request.url);
+    const rel = decodeURIComponent(url.pathname).replace(/^\/+/, '');
+    if (url.host === 'ui') {
+      if (rel.startsWith('shared/')) return serveFile(SHARED, rel.slice('shared/'.length));
+      return serveFile(RENDERER, rel || 'index.html');
+    }
+    if (url.host === 'cover') {
+      try {
+        const data = await callWorker('cover', [Number(rel), url.searchParams.get('size') === 'full']);
+        if (!data) return new Response(null, { status: 404 });
+        return new Response(data, { headers: { 'content-type': 'image/jpeg', 'cache-control': 'max-age=31536000' } });
+      } catch {
+        return new Response(null, { status: 404 });
+      }
+    }
+    return new Response('not found', { status: 404 });
+  });
+}
+
+// ------------------------------------------------------------------ window
+function themeBackground() {
+  const t = settings.get('theme', 'auto');
+  const dark = t === 'dark' || (t === 'auto' && nativeTheme.shouldUseDarkColors);
+  return t === 'sepia' ? '#f4ecd8' : dark ? '#16181d' : '#f7f6f2';
+}
+
+function createWindow() {
+  const b = settings.get('bounds', { width: 1280, height: 820 });
+  win = new BrowserWindow({
+    ...b,
+    minWidth: 760,
+    minHeight: 520,
+    show: false,
+    title: 'الموسوعة الإباضية',
+    backgroundColor: themeBackground(),
+    autoHideMenuBar: true,
+    icon: path.join(SRC, '..', 'build', 'icon.png'),
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.cjs'),
+      contextIsolation: true,
+      sandbox: true,
+      nodeIntegration: false,
+      spellcheck: false,
+      backgroundThrottling: true,
+      v8CacheOptions: 'bypassHeatCheck',
+    },
+  });
+  if (settings.get('maximized')) win.maximize();
+  win.once('ready-to-show', () => win.show());
+
+  const saveBounds = () => {
+    if (!win || win.isDestroyed()) return;
+    settings.set('maximized', win.isMaximized());
+    if (!win.isMaximized() && !win.isMinimized() && !win.isFullScreen()) settings.set('bounds', win.getBounds());
+  };
+  win.on('resize', debounce(saveBounds, 500));
+  win.on('move', debounce(saveBounds, 500));
+  win.on('close', () => {
+    saveBounds();
+    settings.flush();
+  });
+  win.on('closed', () => (win = null));
+
+  const wc = win.webContents;
+  wc.setWindowOpenHandler(({ url }) => {
+    openExternalSafe(url);
+    return { action: 'deny' };
+  });
+  wc.on('will-navigate', (e, url) => {
+    if (!url.startsWith(APP_ORIGIN + '/')) {
+      e.preventDefault();
+      openExternalSafe(url);
+    }
+  });
+  wc.on('context-menu', (_e, p) => buildContextMenu(p).popup({ window: win }));
+  win.loadURL(APP_ORIGIN + '/index.html');
+}
+
+function openExternalSafe(url) {
+  try {
+    const u = new URL(url);
+    if (u.protocol === 'https:' || u.protocol === 'http:' || u.protocol === 'mailto:') shell.openExternal(u.toString());
+  } catch {}
+}
+
+function buildContextMenu(p) {
+  const sel = (p.selectionText || '').trim();
+  const send = (ch, ...a) => win?.webContents.send(ch, ...a);
+  const items = [];
+  if (p.isEditable) {
+    items.push({ role: 'cut', label: 'قص' }, { role: 'copy', label: 'نسخ' }, { role: 'paste', label: 'لصق' }, { type: 'separator' }, { role: 'selectAll', label: 'تحديد الكل' });
+  } else {
+    if (sel) {
+      items.push(
+        { role: 'copy', label: 'نسخ' },
+        { label: 'نسخ مع التوثيق', click: () => send('menu', 'copy-cite') },
+        { type: 'separator' },
+        { label: `البحث عن «${sel.length > 28 ? sel.slice(0, 28) + '…' : sel}» في المكتبة`, click: () => send('menu', 'search', sel) },
+        { label: 'البحث في الكتاب الحالي', click: () => send('menu', 'search-book', sel) },
+        { type: 'separator' },
+      );
+    }
+    items.push({ role: 'selectAll', label: 'تحديد الكل' });
+  }
+  return Menu.buildFromTemplate(items);
+}
+
+function buildAppMenu() {
+  if (process.platform !== 'darwin') {
+    Menu.setApplicationMenu(null);
+    return;
+  }
+  Menu.setApplicationMenu(
+    Menu.buildFromTemplate([
+      { role: 'appMenu', label: 'الموسوعة الإباضية' },
+      { role: 'editMenu', label: 'تحرير' },
+      {
+        label: 'عرض',
+        submenu: [{ role: 'togglefullscreen', label: 'ملء الشاشة' }, { role: 'reload', label: 'إعادة التحميل', visible: !app.isPackaged }],
+      },
+      { role: 'windowMenu', label: 'نافذة' },
+    ]),
+  );
+}
+
+function debounce(fn, ms) {
+  let t;
+  return (...a) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...a), ms);
+  };
+}
+
+// ------------------------------------------------------------------ IPC
+const DB_METHODS = new Set([
+  'info', 'categories', 'books', 'book', 'toc', 'page', 'pages', 'searchBook', 'search', 'searchTitles', 'quickFind',
+  'authors', 'author', 'ayat', 'searchAyat', 'tafsir', 'pdfLink', 'roots',
+  'userBookmarks', 'userAddBookmark', 'userUpdateBookmark', 'userDeleteBookmark', 'userPageBookmarks',
+  'userHistory', 'userSavePosition', 'userGetPosition', 'userClearHistory',
+  'userFavorites', 'userToggleFavorite', 'userIsFavorite', 'userSearchHistory', 'userAddSearch', 'userClearSearchHistory',
+]);
+
+function registerIpc() {
+  ipcMain.handle('db', async (e, method, args) => {
+    if (!isTrusted(e) || !DB_METHODS.has(method)) throw new Error('forbidden');
+    return callWorker(method, Array.isArray(args) ? args : []);
+  });
+  ipcMain.handle('settings:all', (e) => (isTrusted(e) ? settings.all() : {}));
+  ipcMain.handle('settings:set', (e, key, value) => {
+    if (!isTrusted(e) || typeof key !== 'string' || ['libraryPath', 'bounds', 'maximized'].includes(key)) return false;
+    if (key === 'hardwareAcceleration') value = !!value;
+    settings.set(key, value);
+    if (key === 'theme') win?.setBackgroundColor(themeBackground());
+    return true;
+  });
+  ipcMain.handle('library:status', async (e) => {
+    if (!isTrusted(e)) return null;
+    if (!worker) return { ok: false, path: null };
+    try {
+      return { ok: true, path: libraryPath, info: await workerReady };
+    } catch (err) {
+      return { ok: false, path: libraryPath, error: String(err.message || err) };
+    }
+  });
+  ipcMain.handle('library:choose', async (e) => {
+    if (!isTrusted(e)) return null;
+    const r = await dialog.showOpenDialog(win, {
+      title: 'اختر مجلّد المكتبة (الذي يحتوي ibadi.db)',
+      properties: ['openDirectory'],
+    });
+    if (r.canceled || !r.filePaths[0]) return { ok: false, canceled: true };
+    let dir = r.filePaths[0];
+    if (!isLibrary(dir) && isLibrary(path.join(dir, 'library'))) dir = path.join(dir, 'library');
+    if (!isLibrary(dir)) return { ok: false, error: 'لم يُعثر على الملف ibadi.db في هذا المجلّد.' };
+    try {
+      const info = await startWorker(dir);
+      settings.set('libraryPath', dir);
+      return { ok: true, path: dir, info };
+    } catch (err) {
+      return { ok: false, error: String(err.message || err) };
+    }
+  });
+  ipcMain.handle('shell:open', (e, url) => {
+    if (isTrusted(e)) openExternalSafe(url);
+  });
+  ipcMain.handle('clipboard:write', (e, text) => {
+    if (isTrusted(e) && typeof text === 'string') clipboard.writeText(text);
+  });
+  ipcMain.handle('pdf:open', (e, url, title) => {
+    if (!isTrusted(e)) return;
+    openPdfWindow(url, title);
+  });
+  ipcMain.handle('app:info', (e) =>
+    isTrusted(e) ? { version: app.getVersion(), electron: process.versions.electron, platform: process.platform } : null,
+  );
+}
+
+function isTrusted(e) {
+  try {
+    // URL.origin is "null" for custom schemes, so compare protocol and host explicitly.
+    const u = new URL(e.senderFrame.url);
+    return u.protocol === 'app:' && u.host === 'ui';
+  } catch {
+    return false;
+  }
+}
+
+function openPdfWindow(url, title) {
+  let u;
+  try {
+    u = new URL(url);
+  } catch {
+    return;
+  }
+  if (u.protocol !== 'https:') return;
+  const pdf = new BrowserWindow({
+    width: 980,
+    height: 900,
+    title: title || 'المصوَّرة',
+    autoHideMenuBar: true,
+    backgroundColor: '#525659',
+    webPreferences: { sandbox: true, contextIsolation: true, nodeIntegration: false, plugins: true, spellcheck: false },
+  });
+  pdf.webContents.setWindowOpenHandler(({ url: next }) => {
+    openExternalSafe(next);
+    return { action: 'deny' };
+  });
+  pdf.loadURL(u.toString());
+}
+
+// ------------------------------------------------------------------ lifecycle
+app.on('second-instance', () => {
+  if (win) {
+    if (win.isMinimized()) win.restore();
+    win.focus();
+  }
+});
+
+app.whenReady().then(async () => {
+  if (!app.isPackaged) console.log('userData:', app.getPath('userData'));
+  registerProtocol();
+  registerIpc();
+  buildAppMenu();
+  const dir = findLibrary();
+  if (dir) startWorker(dir).catch((e) => console.error('library open failed', e));
+  createWindow();
+  app.on('activate', () => {
+    if (!BrowserWindow.getAllWindows().length) createWindow();
+  });
+});
+
+app.on('window-all-closed', () => {
+  settings.flush();
+  if (process.platform !== 'darwin') app.quit();
+});
+
+app.on('before-quit', () => {
+  settings.flush();
+  stopWorker();
+});
+
+// Harden every web contents created by the app.
+app.on('web-contents-created', (_e, contents) => {
+  contents.on('will-attach-webview', (e) => e.preventDefault());
+});
