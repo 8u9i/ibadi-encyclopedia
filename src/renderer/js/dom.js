@@ -122,6 +122,11 @@ export function isDeathDate(text) {
   return !text || /\d/.test(text);
 }
 
+/** Applies the digit style to numbers inside a message composed elsewhere (main process). */
+export function digits(text) {
+  return String(text || '').replace(/\d+/g, (d) => num(d));
+}
+
 export function deathLabel(death, text) {
   if (text) {
     if (!isDeathDate(text)) return text; // معاصر، مؤسسة، دورية، جماعي …

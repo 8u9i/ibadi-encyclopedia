@@ -70,9 +70,12 @@ macOS and Linux packages must be built on those systems. `.github/workflows/buil
 
 ### Shipping the library
 
-The library is too large for an installer, and keeping it separate lets content updates ship on their own. Distribute it as a separate download and either:
-- put it next to the installed app as a folder named `library`, or
-- let users choose it on first run (the choice is remembered).
+The library is too large for an installer, and keeping it separate lets content updates ship on their own. It is published as the `library` release, and the app downloads it on first run: users just press «تنزيل المكتبة».
+
+- Package a built library: `node tools/pack-library.mjs --lib <library dir> --out <dir>`. It gzips each database, cuts parts below GitHub's 2 GB limit and writes `library.json` with every part's size and SHA-256.
+- Upload `library.json` and the parts to the release tagged `library` (replacing the old assets).
+- The app downloads to `%LOCALAPPDATA%\Ibadi Encyclopedia\library` on Windows (or a folder the user picks). It checks free space first, resumes interrupted parts with HTTP Range requests, and verifies every part and every restored file before using them. It currently downloads about 1.2 GB, which becomes 3.4 GB on disk.
+- People who already have a library folder can choose it instead («لديّ مجلّد المكتبة»), or place it next to the app as `library`.
 
 ## Updates from the original app
 

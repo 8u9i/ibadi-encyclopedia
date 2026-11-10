@@ -1,4 +1,4 @@
-import { h, icon, clear, modal, toast, coverEl, debounce, setDigitStyle, deathLabel, logo, fillIcons, num } from './dom.js';
+import { h, icon, clear, modal, toast, coverEl, debounce, setDigitStyle, deathLabel, logo, fillIcons, num, digits } from './dom.js';
 import { LibraryView } from './views/library.js';
 import { SearchView } from './views/search.js';
 import { QuranView } from './views/quran.js';
@@ -204,8 +204,8 @@ class App {
     const running = ev.phase !== 'done' && ev.phase !== 'error';
     if (this.syncChip) {
       this.syncChip.hidden = !running;
-      this.syncChip.title = ev.message || '';
-      this.syncChip.querySelector('.tb-sync-label').textContent = ev.message ? ev.message.replace(/^(.{0,28}).*$/, '$1') : 'تحديث الكتب…';
+      this.syncChip.title = digits(ev.message);
+      this.syncChip.querySelector('.tb-sync-label').textContent = ev.message ? digits(ev.message).slice(0, 28) : 'تحديث الكتب…';
     }
     if (ev.phase === 'error') toast('تعذّر التحديث من البرنامج الأصلي: ' + ev.message, 'error');
     this.sections.get('settings')?.onSyncEvent?.(ev);
@@ -547,31 +547,113 @@ class App {
   }
 
   // -------------------------------------------------------------- first run
+  /**
+   * First run: download the library (the normal path), or point at an existing library folder.
+   * The download resumes where it stopped if it is interrupted or cancelled.
+   */
   showSetup(status) {
     document.getElementById('app').classList.add('no-library');
     clear(this.views);
-    const err = status?.error ? h('p', { class: 'muted', style: { color: 'var(--danger)' }, text: 'تعذّر فتح المكتبة: ' + status.error }) : null;
-    const btn = h('button', { class: 'btn primary', style: { height: '42px', padding: '0 26px' } }, icon('folder'), 'اختر مجلّد المكتبة');
+    const gb = (n) => {
+      const s = num(Math.max(0.1, n / 1e9).toFixed(1));
+      return `${/[٠-٩]/.test(s) ? s.replace('.', '٫') : s} غ.ب`; // Arabic decimal separator
+    };
+    const err = status?.error ? h('p', { class: 'setup-error', text: 'تعذّر فتح المكتبة: ' + status.error }) : null;
+    const sizeLine = h('p', { class: 'faint', text: 'جارٍ التحقّق من حجم المكتبة…' });
+    const download = h('button', { class: 'btn primary setup-main' }, icon('goto'), 'تنزيل المكتبة');
+    const elsewhere = h('button', { class: 'btn ghost sm' }, 'التنزيل إلى مجلّد آخر…');
+    const existing = h('button', { class: 'btn ghost sm' }, icon('folder'), 'لديّ مجلّد المكتبة');
+    const bar = h('div', { class: 'progress' }, h('div', { class: 'progress-fill' }));
+    const barLabel = h('div', { class: 'progress-label num' });
+    const cancel = h('button', { class: 'btn sm', text: 'إيقاف مؤقّت' });
+    const progress = h('div', { class: 'setup-progress', hidden: true }, barLabel, bar, cancel);
+    const actions = h('div', { class: 'setup-actions' }, download, h('div', { class: 'setup-alt' }, existing, elsewhere));
+    const message = h('p', { class: 'setup-error', hidden: true });
     const card = h(
       'div',
       { class: 'setup-card' },
-      logo(),
-      h('h1', { text: 'الموسوعة الإباضية' }),
-      h('p', { text: 'مرحبًا بك. لم يُعثر على مجلّد المكتبة بعد. اختر المجلّد الذي يحتوي على الملفّ ibadi.db (ويُستحسن أن يكون معه covers.db لأغلفة الكتب).' }),
-      h('p', { class: 'faint' }, 'يُنشأ هذا المجلّد مرّة واحدة بأداة التحويل المرفقة من بيانات الموسوعة الأصلية، ويمكن وضعه بجوار البرنامج باسم ', h('code', { text: 'library' }), ' ليُكتشف تلقائيًا.'),
-      err,
-      btn,
+      ...[
+        logo(),
+        h('h1', { text: 'الموسوعة الإباضية' }),
+        h('p', { text: 'مرحبًا بك. تحتاج إلى مكتبة الكتب لتبدأ القراءة: نحو ثلاثة آلاف كتاب بنصوصها وأغلفتها وفهارسها، تُنزَّل مرّة واحدة وتعمل بعدها بلا إنترنت.' }),
+        sizeLine,
+        err,
+        message,
+        actions,
+        progress,
+      ].filter(Boolean),
     );
     const view = h('div', { class: 'view' }, h('div', { class: 'setup' }, card));
     this.views.append(view);
     this.setupView = view;
     this.section = 'setup';
     this.renderTabs();
-    btn.addEventListener('click', async () => {
-      btn.disabled = true;
-      const r = await api.library.choose();
-      btn.disabled = false;
+
+    api.library.remote().then((r) => {
+      if (r?.ok) sizeLine.textContent = `حجم التنزيل ${gb(r.download)}، وتشغل بعد التثبيت ${gb(r.installed)}.`;
+      else sizeLine.textContent = 'تعذّر الوصول إلى خادم التنزيل الآن. تحقّق من الاتصال بالإنترنت، أو اختر مجلّد مكتبة موجودًا.';
+    });
+
+    let started = 0;
+    let startBytes = 0;
+    const off = api.library.onDownload((ev) => {
+      if (ev.total) {
+        const pct = Math.min(100, (ev.received / ev.total) * 100);
+        bar.firstChild.style.transform = `scaleX(${pct / 100})`;
+        bar.setAttribute('aria-valuenow', String(Math.round(pct)));
+        let eta = '';
+        if (ev.phase === 'download') {
+          if (!started) {
+            started = Date.now();
+            startBytes = ev.received;
+          }
+          const secs = (Date.now() - started) / 1000;
+          const rate = secs > 2 ? (ev.received - startBytes) / secs : 0;
+          if (rate > 0) {
+            const left = Math.round((ev.total - ev.received) / rate / 60);
+            eta = ` · ${num((rate / 1e6).toFixed(1)).replace('.', '٫')} م.ب/ث · بقي نحو ${left < 1 ? 'أقلّ من دقيقة' : num(left) + ' دقيقة'}`;
+          }
+        }
+        barLabel.textContent = `${digits(ev.message)} — ${num(Math.round(pct))}٪ (${gb(ev.received)} من ${gb(ev.total)})${eta}`;
+      }
+      if (ev.phase === 'restore') cancel.hidden = true;
+    });
+    bar.setAttribute('role', 'progressbar');
+    bar.setAttribute('aria-valuemin', '0');
+    bar.setAttribute('aria-valuemax', '100');
+
+    const begin = async (choose) => {
+      message.hidden = true;
+      actions.hidden = true;
+      progress.hidden = false;
+      cancel.hidden = false;
+      started = 0;
+      barLabel.textContent = 'بدء التنزيل…';
+      const r = await api.library.download(choose);
       if (r?.ok) {
+        off();
+        view.remove();
+        this.setupView = null;
+        toast('تمّ تثبيت المكتبة');
+        await this.loadLibrary(r.info);
+        return;
+      }
+      progress.hidden = true;
+      actions.hidden = false;
+      download.lastChild.textContent = r?.canceled ? 'تنزيل المكتبة' : 'متابعة التنزيل';
+      if (r && !r.canceled) {
+        message.textContent = r.error;
+        message.classList.toggle('is-paused', !!r.paused); // a pause the user chose is not an error
+        message.hidden = false;
+      }
+    };
+    download.addEventListener('click', () => begin(false));
+    elsewhere.addEventListener('click', () => begin(true));
+    cancel.addEventListener('click', () => api.library.cancelDownload());
+    existing.addEventListener('click', async () => {
+      const r = await api.library.choose();
+      if (r?.ok) {
+        off();
         view.remove();
         this.setupView = null;
         toast('تمّ فتح المكتبة');

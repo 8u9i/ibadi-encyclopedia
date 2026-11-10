@@ -5,6 +5,17 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Settings } from './settings.js';
 import { OriginalSync, normalizeOriginalRoot } from './original-sync.js';
+import { LibraryDownloader } from './library-download.js';
+
+// Published library (release assets of this project). Overridable for testing.
+const LIBRARY_URL = process.env.IBADI_LIBRARY_URL || 'https://github.com/8u9i/ibadi-encyclopedia/releases/download/library/';
+
+/** Where a downloaded library goes: local (not roaming or cloud-synced) app data. */
+function defaultLibraryDir() {
+  if (process.env.IBADI_DOWNLOAD_DIR) return process.env.IBADI_DOWNLOAD_DIR; // testing
+  if (process.platform === 'win32' && process.env.LOCALAPPDATA) return path.join(process.env.LOCALAPPDATA, 'Ibadi Encyclopedia', 'library');
+  return path.join(app.getPath('userData'), 'library');
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SRC = path.join(__dirname, '..'); // …/src
@@ -31,6 +42,7 @@ if (!settings.get('hardwareAcceleration', false)) app.disableHardwareAcceleratio
 let win = null;
 let worker = null;
 let sync = null;
+const downloader = new LibraryDownloader({ baseUrl: LIBRARY_URL, send: (ev) => win?.webContents.send('library-download', ev) });
 let workerReady = null;
 let libraryPath = null;
 
@@ -44,6 +56,7 @@ function isLibrary(dir) {
 }
 
 function findLibrary() {
+  if (process.env.IBADI_LIBRARY === 'none') return null; // testing the first-run screen
   const exeDir = path.dirname(app.getPath('exe'));
   const candidates = [
     settings.get('libraryPath'),
@@ -51,6 +64,7 @@ function findLibrary() {
     path.join(process.resourcesPath || '', 'library'),
     path.join(exeDir, 'library'),
     process.platform === 'darwin' ? path.join(exeDir, '..', '..', '..', 'library') : null, // next to the .app
+    defaultLibraryDir(),
     path.join(app.getPath('userData'), 'library'),
     path.join(app.getPath('documents'), 'Ibadi', 'library'),
     app.isPackaged ? null : path.join(SRC, '..', '..', 'library'),
@@ -325,6 +339,35 @@ function registerIpc() {
   ipcMain.handle('pdf:open', (e, url, title) => {
     if (!isTrusted(e)) return;
     openPdfWindow(url, title);
+  });
+  ipcMain.handle('library:remote', async (e) => {
+    if (!isTrusted(e)) return null;
+    try {
+      const m = await downloader.manifest();
+      return { ok: true, download: m.download, installed: m.installed, info: m.info || {}, target: defaultLibraryDir() };
+    } catch (err) {
+      return { ok: false, error: String(err.message || err) };
+    }
+  });
+  ipcMain.handle('library:download', async (e, chooseFolder) => {
+    if (!isTrusted(e)) return null;
+    let target = defaultLibraryDir();
+    if (chooseFolder) {
+      const r = await dialog.showOpenDialog(win, { title: 'اختر مكان حفظ المكتبة', properties: ['openDirectory', 'createDirectory'] });
+      if (r.canceled || !r.filePaths[0]) return { ok: false, canceled: true };
+      target = path.join(r.filePaths[0], 'Ibadi library');
+    }
+    try {
+      const dir = await downloader.run(target);
+      const info = await startWorker(dir);
+      settings.set('libraryPath', dir);
+      return { ok: true, path: dir, info };
+    } catch (err) {
+      return { ok: false, error: String(err.message || err), paused: !!err.paused };
+    }
+  });
+  ipcMain.handle('library:cancelDownload', (e) => {
+    if (isTrusted(e)) downloader.cancel();
   });
   ipcMain.handle('sync:status', (e) => (isTrusted(e) && sync ? sync.status() : null));
   ipcMain.handle('sync:run', (e) => {

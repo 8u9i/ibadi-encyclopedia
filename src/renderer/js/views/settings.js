@@ -1,4 +1,4 @@
-import { h, icon, num, toast } from '../dom.js';
+import { h, icon, num, toast, digits } from '../dom.js';
 import { DEFAULTS } from '../app.js';
 
 export class SettingsView {
@@ -50,9 +50,9 @@ export class SettingsView {
     );
     fontSel.value = s.readFont;
     fontSel.addEventListener('change', () => set('readFont', fontSel.value));
-    const digits = h('input', { type: 'checkbox', checked: !!s.arabicDigits });
-    digits.addEventListener('change', () => {
-      set('arabicDigits', digits.checked);
+    const digitsBox = h('input', { type: 'checkbox', checked: !!s.arabicDigits });
+    digitsBox.addEventListener('change', () => {
+      set('arabicDigits', digitsBox.checked);
       toast('يسري التغيير على ما يُعرض من الآن');
     });
     const gpu = h('input', { type: 'checkbox', checked: !!s.hardwareAcceleration });
@@ -102,7 +102,7 @@ export class SettingsView {
         row('حجم الخط', 'أو Ctrl + = و Ctrl + - أثناء القراءة', range('readSize', 14, 44, 1, (v) => `${num(v)}`)),
         row('تباعد الأسطر', null, range('readLeading', 1.4, 2.8, 0.1, (v) => num(v.toFixed(1)))),
         row('عرض النص', 'أقصى عرض لعمود القراءة', range('readWidth', 560, 1400, 20, (v) => num(v))),
-        row('الأرقام المشرقية', 'عرض الأرقام بالشكل ١٢٣ بدل 123', digits),
+        row('الأرقام المشرقية', 'عرض الأرقام بالشكل ١٢٣ بدل 123', digitsBox),
         row('طريقة القراءة الافتراضية', null, modeSel),
         this.preview,
         h('div', { class: 'set-row' }, reset),
@@ -159,7 +159,7 @@ export class SettingsView {
 
     let state;
     if (st.running) {
-      const msg = (ev && ev.message) || st.progress?.message || 'جارٍ التحديث';
+      const msg = digits((ev && ev.message) || st.progress?.message || 'جارٍ التحديث');
       state = h('span', { class: 'muted', style: { display: 'inline-flex', gap: '8px', alignItems: 'center' } }, h('span', { class: 'spinner' }), msg);
     } else if (st.error) state = h('span', { style: { color: 'var(--danger)' }, text: st.error });
     else if (st.last) {

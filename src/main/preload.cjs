@@ -10,6 +10,14 @@ contextBridge.exposeInMainWorld('ibadi', {
   library: {
     status: () => ipcRenderer.invoke('library:status'),
     choose: () => ipcRenderer.invoke('library:choose'),
+    remote: () => ipcRenderer.invoke('library:remote'),
+    download: (chooseFolder) => ipcRenderer.invoke('library:download', !!chooseFolder),
+    cancelDownload: () => ipcRenderer.invoke('library:cancelDownload'),
+    onDownload: (fn) => {
+      const l = (_e, ev) => fn(ev);
+      ipcRenderer.on('library-download', l);
+      return () => ipcRenderer.removeListener('library-download', l);
+    },
   },
   openExternal: (url) => ipcRenderer.invoke('shell:open', url),
   openPdf: (url, title) => ipcRenderer.invoke('pdf:open', url, title),
