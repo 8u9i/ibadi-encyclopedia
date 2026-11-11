@@ -6,6 +6,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Settings } from './settings.js';
 import { OriginalSync, normalizeOriginalRoot } from './original-sync.js';
 import { LibraryDownloader } from './library-download.js';
+import { LibraryUpdater } from './library-update.js';
 
 // Published library (release assets of this project). Overridable for testing.
 const LIBRARY_URL = process.env.IBADI_LIBRARY_URL || 'https://github.com/8u9i/ibadi-encyclopedia/releases/download/library/';
@@ -42,6 +43,7 @@ if (!settings.get('hardwareAcceleration', false)) app.disableHardwareAcceleratio
 let win = null;
 let worker = null;
 let sync = null;
+let updater = null;
 const downloader = new LibraryDownloader({ baseUrl: LIBRARY_URL, send: (ev) => win?.webContents.send('library-download', ev) });
 let workerReady = null;
 let libraryPath = null;
@@ -290,6 +292,13 @@ const DB_METHODS = new Set([
   'userFavorites', 'userToggleFavorite', 'userIsFavorite', 'userSearchHistory', 'userAddSearch', 'userClearSearchHistory',
 ]);
 
+const PROTECTED_SETTINGS = new Set([
+  'libraryPath', 'bounds', 'maximized', 'originalPath', 'syncSignature', 'lastSync', 'autoSync',
+  'autoUpdate', 'autoPublish', 'lastUpdate', 'lastPublish', 'updateCheckedAt', 'publishRepo',
+]);
+
+const unpacked = (file) => path.join(__dirname, file).replace(`app.asar${path.sep}`, `app.asar.unpacked${path.sep}`);
+
 function registerIpc() {
   ipcMain.handle('db', async (e, method, args) => {
     if (!isTrusted(e) || !DB_METHODS.has(method)) throw new Error('forbidden');
@@ -297,7 +306,7 @@ function registerIpc() {
   });
   ipcMain.handle('settings:all', (e) => (isTrusted(e) ? settings.all() : {}));
   ipcMain.handle('settings:set', (e, key, value) => {
-    if (!isTrusted(e) || typeof key !== 'string' || ['libraryPath', 'bounds', 'maximized', 'originalPath', 'syncSignature', 'lastSync', 'autoSync'].includes(key)) return false;
+    if (!isTrusted(e) || typeof key !== 'string' || PROTECTED_SETTINGS.has(key)) return false;
     if (key === 'hardwareAcceleration') value = !!value;
     settings.set(key, value);
     if (key === 'theme') win?.setBackgroundColor(themeBackground());
@@ -361,6 +370,7 @@ function registerIpc() {
       const dir = await downloader.run(target);
       const info = await startWorker(dir);
       settings.set('libraryPath', dir);
+      setTimeout(() => updater?.check(false), 3000); // books published since the full download
       return { ok: true, path: dir, info };
     } catch (err) {
       return { ok: false, error: String(err.message || err), paused: !!err.paused };
@@ -392,6 +402,17 @@ function registerIpc() {
     sync?.check(true);
     return { ok: true, status: sync?.status() };
   });
+  ipcMain.handle('update:status', (e) => (isTrusted(e) && updater ? updater.status() : null));
+  ipcMain.handle('update:run', (e) => (isTrusted(e) && updater ? updater.check(true) : null));
+  ipcMain.handle('update:auto', (e, on) => {
+    if (!isTrusted(e)) return;
+    settings.set('autoUpdate', !!on);
+    if (on) updater?.check(false);
+  });
+  ipcMain.handle('update:autoPublish', (e, on) => {
+    if (isTrusted(e) && updater?.publisher) settings.set('autoPublish', !!on);
+  });
+  ipcMain.handle('update:publish', (e) => (isTrusted(e) && updater ? updater.publish() : null));
   ipcMain.handle('window:state', (e) => (isTrusted(e) ? windowState() : null));
   ipcMain.handle('window:control', (e, action) => {
     if (!isTrusted(e) || !win || win.isDestroyed()) return;
@@ -462,12 +483,30 @@ app.whenReady().then(async () => {
     send: (ev) => win?.webContents.send('sync-event', ev),
     onLibraryChanged: async (report) => {
       await callWorker('reload', []).catch(() => {});
-      win?.webContents.send('library-changed', { added: report.added, updated: report.updated, removed: report.removed });
+      win?.webContents.send('library-changed', { added: report.added, updated: report.updated, removed: report.removed, source: 'original' });
+      // The maintainer's copy can pass the new books straight on to everyone.
+      const changed = report.added.length + report.updated.length + report.removed.length;
+      if (changed && settings.get('autoPublish', false) && updater?.publisher) updater.publish();
     },
+    isBlocked: () => !!updater?.running,
     javaDir: app.isPackaged ? path.join(process.resourcesPath, 'java') : path.join(SRC, '..', 'vendor', 'java'),
-    workerFile: path.join(__dirname, 'sync-worker.js').replace(`app.asar${path.sep}`, `app.asar.unpacked${path.sep}`),
+    workerFile: unpacked('sync-worker.js'),
+  });
+  updater = new LibraryUpdater({
+    settings,
+    baseUrl: LIBRARY_URL,
+    publishTag: process.env.IBADI_PUBLISH_TAG || 'library', // testing
+    getLibraryPath: () => libraryPath,
+    send: (ev) => win?.webContents.send('update-event', ev),
+    onLibraryChanged: async (report) => {
+      await callWorker('reload', []).catch(() => {});
+      win?.webContents.send('library-changed', { added: report.added, updated: report.updated, removed: report.removed, source: 'update' });
+    },
+    isBlocked: () => !!sync?.running,
+    workerFile: unpacked('update-worker.js'),
   });
   sync.start();
+  updater.start();
   app.on('activate', () => {
     if (!BrowserWindow.getAllWindows().length) createWindow();
   });
@@ -480,6 +519,7 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   sync?.stop();
+  updater?.stop();
   settings.flush();
   stopWorker();
 });

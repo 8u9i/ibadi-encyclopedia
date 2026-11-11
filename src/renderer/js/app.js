@@ -65,6 +65,7 @@ class App {
     api.onMenu((action, arg) => this.onMenu(action, arg));
     api.sync.onEvent((ev) => this.onSyncEvent(ev));
     api.sync.onLibraryChanged((ev) => this.onLibraryChanged(ev));
+    api.update.onEvent((ev) => this.onUpdateEvent(ev));
 
     const status = await api.library.status();
     if (!status?.ok) {
@@ -134,7 +135,7 @@ class App {
     const tools = document.getElementById('tools');
     this.themeBtn = h('button', { class: 'tb-btn', onclick: () => this.cycleTheme() });
     this.settingsBtn = h('button', { class: 'tb-btn', dataset: { section: 'settings' }, title: 'الإعدادات (Alt+6)', 'aria-label': 'الإعدادات', onclick: () => this.go('settings') }, icon('settings'));
-    this.syncChip = h('button', { class: 'tb-sync', hidden: true, onclick: () => this.go('settings', { section: 'sync' }) }, h('span', { class: 'spinner' }), h('span', { class: 'tb-sync-label', text: 'تحديث الكتب…' }));
+    this.syncChip = h('button', { class: 'tb-sync', hidden: true, onclick: () => this.go('settings', { section: this.chipTarget || 'sync' }) }, h('span', { class: 'spinner' }), h('span', { class: 'tb-sync-label', text: 'تحديث الكتب…' }));
     clear(tools).append(
       this.syncChip,
       h('button', { class: 'tb-find', title: 'بحث سريع عن كتاب أو مؤلف (Ctrl+K)', onclick: () => this.palette() }, icon('search'), h('span', { class: 'tb-find-label', text: 'كتاب أو مؤلف…' }), h('kbd', { text: 'Ctrl K' })),
@@ -204,6 +205,7 @@ class App {
     const running = ev.phase !== 'done' && ev.phase !== 'error';
     if (this.syncChip) {
       this.syncChip.hidden = !running;
+      if (running) this.chipTarget = 'sync';
       this.syncChip.title = digits(ev.message);
       this.syncChip.querySelector('.tb-sync-label').textContent = ev.message ? digits(ev.message).slice(0, 28) : 'تحديث الكتب…';
     }
@@ -211,7 +213,25 @@ class App {
     this.sections.get('settings')?.onSyncEvent?.(ev);
   }
 
-  async onLibraryChanged({ added = [], updated = [], removed = [] }) {
+  // -------------------------------------------------------------- published library updates
+  onUpdateEvent(ev) {
+    const running = !['done', 'error', 'status', 'published'].includes(ev.phase);
+    if (this.syncChip) {
+      this.syncChip.hidden = !running;
+      const label = ev.phase === 'publish' ? 'نشر التحديث…' : 'تحديث المكتبة…';
+      this.syncChip.title = digits(ev.message || label);
+      this.syncChip.querySelector('.tb-sync-label').textContent = label;
+      if (running) this.chipTarget = 'updates';
+    }
+    if (ev.phase === 'error') toast(ev.message, 'error');
+    if (ev.phase === 'published') {
+      const r = ev.report || {};
+      toast(r.changed ? `نُشر التحديث ${num(r.version)}: ${num((r.added || 0) + (r.updated || 0))} كتاب` : 'لا جديد للنشر');
+    }
+    this.sections.get('settings')?.onUpdateEvent?.(ev);
+  }
+
+  async onLibraryChanged({ added = [], updated = [], removed = [], source = 'original' }) {
     const [books, cats] = await Promise.all([this.db('books'), this.db('categories')]);
     this.books = books;
     this.bookMap = new Map(books.map((b) => [b.id, b]));
@@ -229,7 +249,7 @@ class App {
     if (added.length) parts.push(`أُضيف ${num(added.length)} كتاب`);
     if (updated.length) parts.push(`حُدِّث ${num(updated.length)}`);
     if (removed.length) parts.push(`أُزيل ${num(removed.length)}`);
-    if (parts.length) toast(parts.join('، ') + ' من البرنامج الأصلي');
+    if (parts.length) toast(parts.join('، ') + (source === 'update' ? ' من تحديثات المكتبة' : ' من البرنامج الأصلي'));
   }
 
   markNav() {

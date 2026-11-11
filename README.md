@@ -77,6 +77,28 @@ The library is too large for an installer, and keeping it separate lets content 
 - The app downloads to `%LOCALAPPDATA%\Ibadi Encyclopedia\library` on Windows (or a folder the user picks). It checks free space first, resumes interrupted parts with HTTP Range requests, and verifies every part and every restored file before using them. It currently downloads about 1.2 GB, which becomes 3.4 GB on disk.
 - People who already have a library folder can choose it instead («لديّ مجلّد المكتبة»), or place it next to the app as `library`.
 
+## Library updates (for everyone)
+
+New and corrected books reach every installed copy as small **update packs**, not a new 1.2 GB download.
+
+- **In the app**: it checks `library.json` at startup and every six hours. With «تنزيل التحديثات تلقائيًا» on (the default) it downloads the new packs, checks their SHA-256 and applies them; Settings → «تحديثات المكتبة» → «تحديث الآن» does it on demand. Each pack is applied in one transaction, so a library is either fully updated or untouched. Open books reload at the same page.
+- **What a pack holds**: the full content of every new or changed book (pages, headings, catalogue row, per-book metadata, cover, root-dictionary entries), the ids of removed books, and the category and author tables when they change. A one-book correction is typically 60–250 KB.
+- **How changes are found**: every book has a fingerprint (SHA-256 of its text, headings and metadata). `state.json` on the release holds the fingerprints of what was last published, so a pack contains exactly the books whose fingerprint changed. Fingerprinting the whole library takes about 20 seconds.
+
+### Publishing (maintainer)
+
+Needs the GitHub CLI (`gh`) logged in with write access to this repository.
+
+```bash
+npm run publish-update -- --lib "D:\Ibadi\library"
+```
+
+It builds the pack, then uploads `update-NNNN.db.gz`, the new `library.json` and `state.json`, in that order, so a failure at any step is harmless (rerunning ships the same books again). `--dry-run` builds the pack without uploading. `--init` records a library as the published baseline; it was run once on the library matching the `library` release.
+
+**Automatically, from the original app**: when `gh` can write to the repository, Settings → «تحديثات المكتبة» shows a «النشر (للمشرف)» section. Turn on «نشر التحديثات تلقائيًا» and every time this app copies new books from the original Ibadi Encyclopedia, it publishes them as a pack straight away. Other users never see this section.
+
+To start over from a fresh full download (for example after many packs), rebuild and upload the full library with `pack-library.mjs`, set `"version"` and `"base"` in `library.json` to the current version, and run `--init`.
+
 ## Updates from the original app
 
 When the original Ibadi Encyclopedia downloads new or updated books, this app picks them up on its own. Nothing is fetched from the internet by this app.
@@ -110,10 +132,13 @@ This runs 39 checks against a real library: metadata, paging, every search mode,
 ## Project layout
 
 ```
-src/main/        main.js (window, app:// protocol, IPC), db-worker.js (all SQLite queries), preload.cjs, settings.js
+src/main/        main.js (window, app:// protocol, IPC), db-worker.js (all SQLite queries), preload.cjs, settings.js,
+                 library-download.js (first-run download), library-update.js + update-worker.js (update packs),
+                 original-sync.js + sync-worker.js (import from the original app)
 src/renderer/    index.html, styles.css, js/ (app shell, views, page renderer), fonts/ (Amiri, Amiri Quran, Noto — OFL)
-src/shared/      arabic.js (normalization, query expansion, highlighting), quran.js
-tools/           convert.mjs, build-library.mjs, lucene/LuceneExport.java, smoke-test.mjs, make-icon.mjs, cdp.mjs
+src/shared/      arabic.js (normalization, query expansion, highlighting), quran.js,
+                 library-pack.js (fingerprints, build and apply update packs), publish.js (upload with gh)
+tools/           convert.mjs, build-library.mjs, pack-library.mjs, publish-update.mjs, lucene/LuceneExport.java, smoke-test.mjs, make-icon.mjs, cdp.mjs
 ```
 
 ## Not ported yet

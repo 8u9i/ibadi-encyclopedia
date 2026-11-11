@@ -25,13 +25,14 @@ export function normalizeOriginalRoot(dir) {
 }
 
 export class OriginalSync {
-  constructor({ settings, getLibraryPath, send, onLibraryChanged, javaDir, workerFile }) {
+  constructor({ settings, getLibraryPath, send, onLibraryChanged, javaDir, workerFile, isBlocked = () => false }) {
     this.settings = settings;
     this.getLibraryPath = getLibraryPath;
     this.send = send;
     this.onLibraryChanged = onLibraryChanged;
     this.javaDir = javaDir;
     this.workerFile = workerFile;
+    this.isBlocked = isBlocked;
     this.running = false;
     this.progress = null;
     this.lastSeen = null;
@@ -139,7 +140,7 @@ export class OriginalSync {
 
   /** Runs when the original's data changed and has been stable for one poll interval. */
   check(force) {
-    if (this.running || !this.getLibraryPath()) return;
+    if (this.running || !this.getLibraryPath() || this.isBlocked()) return;
     if (!force && !this.settings.get('autoSync', true)) return;
     const root = this.root() || this.findRunning();
     if (!root) return;

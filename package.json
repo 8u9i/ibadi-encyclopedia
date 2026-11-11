@@ -1,7 +1,7 @@
 {
   "name": "ibadi-encyclopedia",
   "productName": "Ibadi Encyclopedia",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "الموسوعة الإباضية — مكتبة إلكترونية للقراءة والبحث في الكتب",
   "author": "Ibadi Encyclopedia",
   "homepage": "https://ibadi.net",
@@ -17,7 +17,8 @@
     "dist:linux": "node tools/fetch-lucene.mjs && electron-builder --linux",
     "dist:dir": "node tools/fetch-lucene.mjs && electron-builder --dir",
     "convert": "node tools/convert.mjs",
-    "fetch-lucene": "node tools/fetch-lucene.mjs"
+    "fetch-lucene": "node tools/fetch-lucene.mjs",
+    "publish-update": "node tools/run-electron-node.mjs tools/publish-update.mjs"
   },
   "devDependencies": {
     "electron": "44.9.3",
@@ -40,6 +41,7 @@
     "asarUnpack": [
       "src/main/db-worker.js",
       "src/main/sync-worker.js",
+      "src/main/update-worker.js",
       "src/shared/**"
     ],
     "compression": "maximum",

@@ -11,6 +11,7 @@ export class SettingsView {
   async onShow(arg) {
     await this.render();
     if (arg?.section === 'sync') this.syncCard?.scrollIntoView({ block: 'start' });
+    if (arg?.section === 'updates') this.updateCard?.scrollIntoView({ block: 'start' });
   }
 
   async render() {
@@ -117,6 +118,7 @@ export class SettingsView {
           ? row('المحتوى', `بُنيت في ${info.built_at ? new Date(info.built_at).toLocaleDateString('ar') : '—'} من الإصدار ${info.source_label || '—'}`, h('span', { class: 'muted num', text: `${num(Number(info.books))} كتابًا · ${num(Number(info.pages))} صفحة` }))
           : null,
       ),
+      (this.updateCard = h('div', { class: 'set-card', id: 'updates' })),
       (this.syncCard = h('div', { class: 'set-card', id: 'sync' })),
       h(
         'div',
@@ -127,9 +129,86 @@ export class SettingsView {
       ),
     );
     this.renderSync();
+    this.renderUpdates();
   }
 
   syncPreview() {}
+
+  onUpdateEvent(ev) {
+    if (!this.el.hidden) this.renderUpdates(ev);
+  }
+
+  /** New and corrected books published for every copy of the app. */
+  async renderUpdates(ev) {
+    const card = this.updateCard;
+    if (!card) return;
+    const st = await window.ibadi.update.status();
+    if (!st) return;
+    const row = (label, hint, control) => h('div', { class: 'set-row' }, h('div', { class: 'lbl' }, label, hint ? h('small', { text: hint }) : null), control);
+    const when = (t) => new Intl.DateTimeFormat('ar', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(t));
+    const busy = st.running || st.publisher?.running;
+
+    const auto = h('input', { type: 'checkbox', checked: !!st.auto, 'aria-label': 'تنزيل التحديثات تلقائيًا' });
+    auto.addEventListener('change', () => window.ibadi.update.setAuto(auto.checked));
+    const now = h('button', { class: 'btn primary', disabled: !!busy }, icon('history'), st.running ? 'جارٍ التحديث…' : 'تحديث الآن');
+    now.addEventListener('click', async () => {
+      now.disabled = true;
+      now.lastChild.textContent = 'جارٍ التحقّق…';
+      const r = await window.ibadi.update.run();
+      if (r && !r.error && !r.pending.count && !r.running) toast('مكتبتك محدَّثة');
+      this.renderUpdates();
+    });
+
+    let state;
+    if (st.running) {
+      const msg = digits((ev && ev.message) || st.progress?.message || 'جارٍ التحديث');
+      state = h('span', { class: 'muted', style: { display: 'inline-flex', gap: '8px', alignItems: 'center' } }, h('span', { class: 'spinner' }), msg);
+    } else if (st.error) state = h('span', { style: { color: 'var(--danger)' }, text: st.error });
+    else if (st.pending.count) {
+      const bits = [];
+      if (st.pending.added) bits.push(`${num(st.pending.added)} كتاب جديد`);
+      if (st.pending.updated) bits.push(`${num(st.pending.updated)} معدَّل`);
+      if (st.pending.removed) bits.push(`${num(st.pending.removed)} محذوف`);
+      state = h('span', { style: { color: 'var(--accent)' }, text: `يتوفّر تحديث: ${bits.join('، ') || 'تصحيحات'}` });
+    } else if (st.last) {
+      const bits = [`أُضيف ${num(st.last.added)}`, `حُدِّث ${num(st.last.updated)}`];
+      if (st.last.removed) bits.push(`أُزيل ${num(st.last.removed)}`);
+      state = h('span', { class: 'muted', text: `${when(st.last.at)} · ${bits.join('، ')}` });
+    } else state = h('span', { class: 'muted', text: st.lastCheck ? 'مكتبتك محدَّثة' : 'لم يُتحقَّق بعد' });
+
+    const version = st.installed == null ? '—' : `الإصدار ${num(st.installed)}${st.lastCheck ? ` · آخر تحقّق ${when(st.lastCheck)}` : ''}`;
+    const rows = [
+      h('h2', { text: 'تحديثات المكتبة' }),
+      h('p', { class: 'muted', style: { margin: '6px 0 4px', fontSize: '13px', lineHeight: 1.8 }, text: 'تصل الكتب الجديدة والمصحَّحة في حزم صغيرة تُنزَّل وتُطبَّق دون إعادة تنزيل المكتبة كلّها.' }),
+      row('الحالة', version, state),
+      row('تنزيل التحديثات تلقائيًا', 'يتحقّق عند التشغيل وكلّ ستّ ساعات', auto),
+      h('div', { class: 'set-row' }, h('span', { style: { flex: 1 } }), now),
+    ];
+
+    if (st.publisher) {
+      const p = st.publisher;
+      const autoPub = h('input', { type: 'checkbox', checked: !!p.auto, 'aria-label': 'النشر التلقائي' });
+      autoPub.addEventListener('change', () => window.ibadi.update.setAutoPublish(autoPub.checked));
+      const pub = h('button', { class: 'btn', disabled: !!busy }, icon('external'), p.running ? 'جارٍ النشر…' : 'نشر الآن');
+      pub.addEventListener('click', async () => {
+        pub.disabled = true;
+        await window.ibadi.update.publish();
+        this.renderUpdates();
+      });
+      let pstate;
+      if (p.running) pstate = h('span', { class: 'muted', style: { display: 'inline-flex', gap: '8px', alignItems: 'center' } }, h('span', { class: 'spinner' }), digits((ev && ev.message) || p.progress?.message || 'جارٍ النشر'));
+      else if (p.error) pstate = h('span', { style: { color: 'var(--danger)' }, text: p.error });
+      else if (p.last) pstate = h('span', { class: 'muted', text: p.last.changed ? `${when(p.last.at)} · الإصدار ${num(p.last.version)}: ${num(p.last.added + p.last.updated)} كتاب` : `${when(p.last.at)} · لا جديد` });
+      else pstate = h('span', { class: 'muted', text: '—' });
+      rows.push(
+        h('h3', { text: 'النشر (للمشرف)', style: { margin: '14px 0 2px', fontSize: '14px' } }),
+        row('نشر التحديثات تلقائيًا', 'بعد كلّ نقلٍ من البرنامج الأصلي تُرفع الكتب المتغيّرة إلى GitHub ليتلقّاها الجميع.', autoPub),
+        row('آخر نشر', null, pstate),
+        h('div', { class: 'set-row' }, h('span', { style: { flex: 1 } }), pub),
+      );
+    }
+    card.replaceChildren(...rows);
+  }
 
   onSyncEvent(ev) {
     if (!this.el.hidden) this.renderSync(ev);
@@ -151,7 +230,7 @@ export class SettingsView {
     });
     const auto = h('input', { type: 'checkbox', checked: !!st.auto, 'aria-label': 'التحديث التلقائي' });
     auto.addEventListener('change', () => window.ibadi.sync.setAuto(auto.checked));
-    const now = h('button', { class: 'btn primary', disabled: !st.root || st.running }, icon('history'), st.running ? 'جارٍ التحديث…' : 'تحديث الآن');
+    const now = h('button', { class: 'btn primary', disabled: !st.root || st.running }, icon('history'), st.running ? 'جارٍ النقل…' : 'نقل الآن');
     now.addEventListener('click', async () => {
       await window.ibadi.sync.run();
       this.renderSync();
