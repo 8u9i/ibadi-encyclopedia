@@ -3,378 +3,453 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>الموسوعة الإباضية — تنزيل</title>
-<meta name="description" content="الموسوعة الإباضية: مكتبة إلكترونية تضمّ ٢٬٩٣١ كتابًا للقراءة والبحث، لويندوز وماك ولينكس. تنزيل مباشر ومجّاني.">
-<meta name="theme-color" content="#f3eee4" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1a1714" media="(prefers-color-scheme: dark)">
+<title>الموسوعة الإباضية — تنزيل البرنامج</title>
+<meta name="description" content="حمّل الموسوعة الإباضية لويندوز وماك ولينكس: ٢٬٩٣١ كتابًا للقراءة والبحث، تعمل بلا إنترنت.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --paper: oklch(0.962 0.012 85);
-  --paper-2: oklch(0.985 0.007 85);
-  --paper-3: oklch(0.93 0.016 82);
-  --ink: oklch(0.24 0.018 60);
-  --ink-2: oklch(0.42 0.018 60);
-  --ink-3: oklch(0.56 0.016 65);
-  --rule: oklch(0.86 0.018 80);
-  --rubric: oklch(0.5 0.155 28);
-  --rubric-2: oklch(0.43 0.15 28);
-  --rubric-soft: oklch(0.925 0.032 35);
-  --on-rubric: oklch(0.985 0.01 85);
-  --gold: oklch(0.68 0.09 80);
-  --shadow: 0 1px 2px oklch(0.3 0.03 60 / 0.08), 0 8px 24px -12px oklch(0.3 0.03 60 / 0.25);
-  --r: 10px;
-  --display: "Amiri", "Noto Naskh Arabic", serif;
-  --ui: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, system-ui, sans-serif;
+  --page: #ebe7df;
+  --slide: #f8f6f1;
+  --card: #ffffff;
+  --ink: #1d1c1a;
+  --ink-2: #4a4843;
+  --ink-3: #85827a;
+  --line: #e4e0d6;
+  --stroke: #1d1c1a;
+  --red: #ee6b4d;    --red-soft: #fde4dc;
+  --yellow: #f2b43c; --yellow-soft: #fdf0d2;
+  --green: #7fa58f;  --green-soft: #e1ede5;
+  --blue: #7d8fd8;   --blue-soft: #e3e8fa;
+  --pink: #f39ab1;   --pink-soft: #fde5ec;
+  --purple: #b49ce4; --purple-soft: #eee7fb;
+  --radius: 22px;
+  --font: "Readex Pro", "Segoe UI", Tahoma, system-ui, sans-serif;
   color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: oklch(0.185 0.01 60); --paper-2: oklch(0.215 0.011 60); --paper-3: oklch(0.16 0.009 60);
-    --ink: oklch(0.92 0.012 80); --ink-2: oklch(0.78 0.014 75); --ink-3: oklch(0.64 0.014 70);
-    --rule: oklch(0.3 0.012 60);
-    --rubric: oklch(0.71 0.13 35); --rubric-2: oklch(0.78 0.11 38); --rubric-soft: oklch(0.29 0.045 35); --on-rubric: oklch(0.17 0.02 40);
-    --gold: oklch(0.74 0.08 80);
-    --shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 10px 30px -12px oklch(0 0 0 / 0.6);
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --paper: oklch(0.185 0.01 60); --paper-2: oklch(0.215 0.011 60); --paper-3: oklch(0.16 0.009 60);
-  --ink: oklch(0.92 0.012 80); --ink-2: oklch(0.78 0.014 75); --ink-3: oklch(0.64 0.014 70);
-  --rule: oklch(0.3 0.012 60);
-  --rubric: oklch(0.71 0.13 35); --rubric-2: oklch(0.78 0.11 38); --rubric-soft: oklch(0.29 0.045 35); --on-rubric: oklch(0.17 0.02 40);
-  --gold: oklch(0.74 0.08 80);
-  --shadow: 0 1px 2px oklch(0 0 0 / 0.3), 0 10px 30px -12px oklch(0 0 0 / 0.6);
-  color-scheme: dark;
-}
-
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
-body {
-  margin: 0; background: var(--paper); color: var(--ink);
-  font: 16px/1.75 var(--ui); text-rendering: optimizeLegibility;
-}
-a { color: var(--rubric); text-underline-offset: 3px; }
-a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
-.wrap { width: min(1080px, 100% - 32px); margin-inline: auto; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 400 16px/1.7 var(--font); }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; border-radius: 10px; }
 .num { font-variant-numeric: tabular-nums; }
 
-/* ---------- top bar */
-.top { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
-.brand { display: flex; align-items: center; gap: 10px; color: var(--ink); text-decoration: none; font-family: var(--display); font-size: 22px; font-weight: 700; }
-.brand svg { width: 34px; height: 34px; }
-.top nav { display: flex; gap: 20px; font-size: 14px; }
-.top nav a { color: var(--ink-2); text-decoration: none; }
-.top nav a:hover { color: var(--rubric); }
+.deck { width: min(1120px, 100% - 24px); margin: 12px auto 28px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.slide { background: var(--slide); border-radius: var(--radius); padding: 34px 32px 30px; position: relative; overflow: hidden; }
+.slide.wide { grid-column: 1 / -1; }
+.slide h2 { margin: 0; text-align: center; font-weight: 600; font-size: clamp(26px, 3.4vw, 34px); line-height: 1.3; }
+.slide .sub { margin: 4px 0 24px; text-align: center; color: var(--ink-3); font-size: 14px; font-weight: 300; }
 
-/* ---------- hero */
-.hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: center; padding: 40px 0 64px; }
-.eyebrow { display: inline-flex; align-items: center; gap: 8px; color: var(--rubric); font-size: 14px; font-weight: 600; margin: 0 0 10px; }
-.eyebrow::before { content: "۞"; font-family: var(--display); font-size: 18px; line-height: 1; }
-h1 { font-family: var(--display); font-weight: 700; font-size: clamp(44px, 7vw, 76px); line-height: 1.15; margin: 0 0 16px; letter-spacing: 0; }
-h1 .rub { color: var(--rubric); }
-.lede { font-size: 19px; color: var(--ink-2); max-width: 34em; margin: 0 0 30px; }
-
-.cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; }
-.btn {
+/* hero */
+.hero { text-align: center; padding: 34px 28px 0; }
+.hero .kicker { font-size: clamp(20px, 3vw, 30px); font-weight: 400; margin: 0; }
+.hero h1 { margin: 0; font-weight: 700; font-size: clamp(44px, 9vw, 104px); line-height: 1.12; letter-spacing: -1px; }
+.hero .corner { position: absolute; bottom: 18px; font-size: 13px; color: var(--ink-2); z-index: 2; background: var(--slide); padding: 0 6px; }
+.hero .corner.r { right: 26px; } .hero .corner.l { left: 26px; }
+.hero-art { display: block; width: min(860px, 100%); height: auto; margin: 6px auto 0; }
+.hero-cta { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px 16px; margin: 14px 0 4px; position: relative; z-index: 2; }
+.big {
   display: inline-flex; align-items: center; gap: 12px; text-decoration: none; cursor: pointer;
-  border: 1px solid var(--rule); background: var(--paper-2); color: var(--ink);
-  padding: 12px 18px; border-radius: var(--r); font: 600 15px/1.3 var(--ui);
-  transition: transform .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+  background: var(--ink); color: #fff; border: 2.5px solid var(--stroke); border-radius: 16px;
+  padding: 12px 22px 12px 18px; box-shadow: 4px 4px 0 var(--yellow);
+  transition: transform .15s ease, box-shadow .15s ease;
 }
-.btn:hover { border-color: var(--ink-3); transform: translateY(-1px); }
-.btn:active { transform: translateY(0); }
-.btn svg { width: 20px; height: 20px; flex: none; }
-.btn.primary {
-  background: var(--rubric); border-color: var(--rubric); color: var(--on-rubric);
-  padding: 16px 26px; font-size: 18px; box-shadow: var(--shadow);
-}
-.btn.primary:hover { background: var(--rubric-2); border-color: var(--rubric-2); }
-.btn .sub { display: block; font-size: 12.5px; font-weight: 400; opacity: .85; margin-top: 2px; }
-.cta-alt { font-size: 14px; color: var(--ink-3); }
-.cta-alt a { color: var(--ink-2); }
-.meta { margin-top: 18px; font-size: 13.5px; color: var(--ink-3); display: flex; flex-wrap: wrap; gap: 6px 16px; }
-.meta span::before { content: "✓"; color: var(--rubric); margin-inline-end: 6px; font-weight: 700; }
-
-/* shelf of books (decorative) */
-.shelf { position: relative; height: 352px; display: flex; align-items: flex-end; justify-content: center; gap: 6px; padding: 0 12px 12px; overflow: hidden; }
-.shelf::after { content: ""; position: absolute; inset-inline: 0; bottom: 0; height: 12px; border-radius: 3px; background: linear-gradient(var(--paper-3), color-mix(in oklch, var(--paper-3), var(--ink) 12%)); box-shadow: var(--shadow); }
-.spine {
-  position: relative; width: var(--w, 46px); height: var(--h, 260px); border-radius: 3px 3px 2px 2px;
-  background: linear-gradient(90deg, var(--c2), var(--c1) 30%, var(--c1) 70%, var(--c2));
-  box-shadow: inset 0 0 0 1px oklch(0 0 0 / .15), 0 6px 14px -8px oklch(0 0 0 / .5);
-  display: flex; align-items: center; justify-content: center; transform-origin: bottom center;
-  animation: rise .8s cubic-bezier(.2,.7,.2,1) both; animation-delay: var(--d, 0s);
-}
-.spine::before, .spine::after { content: ""; position: absolute; inset-inline: 6px; height: 2px; background: var(--gold); opacity: .75; }
-.spine::before { top: 16px; } .spine::after { bottom: 16px; }
-.spine b { writing-mode: vertical-rl; color: oklch(0.93 0.03 85); font: 700 15px/1 var(--display); letter-spacing: 0; opacity: .92; white-space: nowrap; }
-.spine.tilt { transform: rotate(-7deg); margin-inline-start: 14px; }
-@keyframes rise { from { transform: translateY(24px); opacity: 0; } }
-.spine.tilt { animation-name: rise-tilt; }
-@keyframes rise-tilt { from { transform: translateY(24px) rotate(-7deg); opacity: 0; } to { transform: rotate(-7deg); } }
-
-/* ---------- stats */
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); border-block: 1px solid var(--rule); margin-bottom: 72px; }
-.stat { padding: 22px 8px; text-align: center; }
-.stat + .stat { border-inline-start: 1px solid var(--rule); }
-.stat strong { display: block; font-family: var(--display); font-size: 34px; line-height: 1.2; color: var(--ink); }
-.stat span { color: var(--ink-3); font-size: 14px; }
-
-/* ---------- sections */
-section { margin-bottom: 80px; scroll-margin-top: 20px; }
-h2 { font-family: var(--display); font-size: clamp(30px, 4vw, 40px); line-height: 1.3; margin: 0 0 8px; }
-h2 .rub { color: var(--rubric); }
-.section-lede { color: var(--ink-2); margin: 0 0 28px; max-width: 40em; }
+.big:hover { transform: translate(-1px, -1px); box-shadow: 6px 6px 0 var(--yellow); }
+.big:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--yellow); }
+.big svg { width: 24px; height: 24px; flex: none; }
+.big b { display: block; font-size: 18px; font-weight: 600; line-height: 1.3; }
+.big small { display: block; font-size: 12.5px; opacity: .78; font-weight: 300; }
+.link-alt { font-size: 14px; color: var(--ink-2); }
 
 /* platform cards */
-.platforms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
-.card { background: var(--paper-2); border: 1px solid var(--rule); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 14px; transition: border-color .2s, box-shadow .2s; }
-.card.mine { border-color: var(--rubric); box-shadow: var(--shadow); }
-.card-head { display: flex; align-items: center; gap: 12px; }
-.card-head svg { width: 30px; height: 30px; color: var(--ink); }
-.card h3 { margin: 0; font-size: 20px; font-weight: 600; }
-.card .tag { margin-inline-start: auto; font-size: 12px; color: var(--rubric); background: var(--rubric-soft); padding: 2px 10px; border-radius: 999px; visibility: hidden; }
-.card.mine .tag { visibility: visible; }
-.dl { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--r); border: 1px solid var(--rule); text-decoration: none; color: var(--ink); background: var(--paper); transition: border-color .15s, background-color .15s; }
-.dl:hover { border-color: var(--rubric); background: var(--rubric-soft); }
-.dl svg { width: 18px; height: 18px; color: var(--rubric); flex: none; }
-.dl .what { flex: 1; min-width: 0; }
-.dl .what b { display: block; font-weight: 600; font-size: 15px; }
-.dl .what small { color: var(--ink-3); font-size: 12.5px; }
-.dl .size { color: var(--ink-3); font-size: 13px; white-space: nowrap; }
-.dl.main { border-color: var(--ink-3); }
-.card .hint { font-size: 13px; color: var(--ink-3); margin: auto 0 0; }
+.platforms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.pcard { background: var(--card); border: 2px solid var(--stroke); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; transition: box-shadow .2s; }
+.pcard .bar { height: 12px; background: var(--c); border-bottom: 2px solid var(--stroke); }
+.pcard .body { padding: 18px 16px 16px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.pcard .head { display: flex; align-items: center; gap: 10px; }
+.pcard .head svg { width: 36px; height: 36px; flex: none; }
+.pcard h3 { margin: 0; font-size: 20px; font-weight: 600; }
+.pcard .mine { margin-inline-start: auto; font-size: 11.5px; font-weight: 500; background: var(--c); border: 1.5px solid var(--stroke); border-radius: 999px; padding: 1px 10px; display: none; }
+.pcard.is-mine { box-shadow: 5px 5px 0 var(--c); }
+.pcard.is-mine .mine { display: inline-block; }
+.dl { display: flex; align-items: center; gap: 10px; text-decoration: none; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--slide); transition: border-color .15s, background-color .15s; }
+.dl:hover { border-color: var(--stroke); background: var(--soft); }
+.dl.main { border-color: var(--stroke); background: var(--soft); }
+.dl .ic { width: 30px; height: 30px; border-radius: 9px; background: var(--c); border: 1.5px solid var(--stroke); display: grid; place-items: center; flex: none; }
+.dl .ic svg { width: 16px; height: 16px; }
+.dl .t { flex: 1; min-width: 0; }
+.dl .t b { display: block; font-size: 14.5px; font-weight: 500; line-height: 1.35; }
+.dl .t small { color: var(--ink-3); font-size: 12px; font-weight: 300; }
+.dl .sz { font-size: 12.5px; color: var(--ink-2); white-space: nowrap; }
+.pcard .hint { margin: auto 0 0; font-size: 12.5px; color: var(--ink-3); text-align: center; padding-top: 4px; }
+.made-for { text-align: center; font-weight: 500; font-size: 14.5px; margin: 20px 0 0; }
 
-/* steps */
-.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: s; list-style: none; padding: 0; margin: 0; }
-.steps li { counter-increment: s; padding: 22px; border-top: 3px solid var(--rubric); background: var(--paper-2); border-radius: 0 0 14px 14px; }
-.steps li::before { content: counter(s, arabic-indic); display: block; font-family: var(--display); font-size: 36px; line-height: 1; color: var(--rubric); margin-bottom: 10px; }
-.steps h3 { margin: 0 0 6px; font-size: 18px; }
-.steps p { margin: 0; color: var(--ink-2); font-size: 15px; }
-.note { margin-top: 18px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-.note div { padding: 16px 18px; border-radius: 12px; background: var(--paper-3); font-size: 14.5px; color: var(--ink-2); }
-.note b { color: var(--ink); }
-kbd { font: 600 13px var(--ui); background: var(--paper-2); border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 5px; padding: 0 6px; color: var(--ink); white-space: nowrap; }
+/* steps timeline */
+.timeline { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; margin-top: 6px; }
+.track { position: absolute; top: 46px; right: 8%; left: 6%; height: 10px; display: flex; }
+.track i { flex: 1; border: 1.5px solid var(--stroke); border-inline-start: 0; }
+.track i:first-child { border-inline-start: 1.5px solid var(--stroke); border-radius: 0 6px 6px 0; }
+.track i:last-child { clip-path: polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%); border: 0; }
+.track i:nth-child(1) { background: var(--blue); } .track i:nth-child(2) { background: var(--yellow); } .track i:nth-child(3) { background: var(--red); }
+.step { position: relative; padding: 0 10px; }
+.step .lbl { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+.step .dot { width: 22px; height: 22px; margin: 0 auto 22px; border-radius: 50%; background: #fff; border: 2px solid var(--stroke); position: relative; z-index: 1; }
+.step svg { width: 46px; height: 46px; display: block; margin: 0 auto 8px; }
+.step h3 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+.step p { margin: 0 auto; max-width: 22ch; font-size: 13px; color: var(--ink-2); font-weight: 300; line-height: 1.65; }
+
+/* numbers */
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px 12px; padding-top: 6px; }
+.fact { position: relative; border: 1.5px solid var(--stroke); border-radius: 12px; background: #fff; text-align: center; padding: 22px 8px 12px; }
+.fact .pill { position: absolute; top: -12px; right: 50%; transform: translateX(50%); background: var(--c); border: 1.5px solid var(--stroke); border-radius: 8px; font-size: 12px; font-weight: 500; padding: 0 12px; white-space: nowrap; }
+.fact strong { display: block; font-size: 24px; font-weight: 600; line-height: 1.3; }
+.fact span { font-size: 12.5px; color: var(--ink-3); }
+.fact .pill { color: var(--ink); }
 
 /* features */
-.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px 32px; }
-.feature h3 { font-size: 17px; margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
-.feature h3::before { content: ""; width: 8px; height: 8px; background: var(--rubric); transform: rotate(45deg); flex: none; }
-.feature p { margin: 0; color: var(--ink-2); font-size: 15px; }
+.features { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
+.feat { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1.5px solid var(--line); }
+.feat:nth-last-child(-n+2) { border-bottom: 0; }
+.feat .ic { width: 38px; height: 38px; border-radius: 11px; background: var(--c); border: 1.5px solid var(--stroke); display: grid; place-items: center; flex: none; }
+.feat .ic svg { width: 20px; height: 20px; }
+.feat b { display: block; font-weight: 600; font-size: 15px; }
+.feat small { display: block; color: var(--ink-3); font-size: 12.5px; font-weight: 300; line-height: 1.6; }
+
+/* columns */
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.col { border: 2px solid var(--stroke); border-radius: 14px; background: #fff; overflow: hidden; }
+.col .h { background: var(--c); border-bottom: 2px solid var(--stroke); text-align: center; font-weight: 600; padding: 7px; font-size: 15px; }
+.col ul { list-style: none; margin: 0; padding: 6px 14px; }
+.col li { display: flex; gap: 10px; align-items: flex-start; padding: 9px 0; font-size: 13.5px; color: var(--ink-2); border-bottom: 1px solid var(--line); }
+.col li:last-child { border-bottom: 0; }
+.col li::before { content: ""; width: 14px; height: 14px; border-radius: 50%; border: 2.5px solid var(--c); flex: none; margin-top: 4px; }
+kbd { font: 500 12px var(--font); background: var(--slide); border: 1.5px solid var(--stroke); border-bottom-width: 3px; border-radius: 6px; padding: 0 6px; color: var(--ink); white-space: nowrap; direction: ltr; unicode-bidi: isolate; }
+code { font: 12.5px/1.6 ui-monospace, Consolas, monospace; background: var(--slide); border: 1px solid var(--line); padding: 2px 6px; border-radius: 6px; direction: ltr; unicode-bidi: isolate; word-break: break-all; }
 
 /* faq */
-details { border-bottom: 1px solid var(--rule); }
-summary { cursor: pointer; list-style: none; padding: 16px 0; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-summary::-webkit-details-marker { display: none; }
-summary::after { content: "+"; font-size: 22px; color: var(--rubric); line-height: 1; transition: transform .2s; }
-details[open] summary::after { transform: rotate(45deg); }
-details p { margin: 0 0 18px; color: var(--ink-2); }
-code { font: 13px/1.6 ui-monospace, Consolas, monospace; background: var(--paper-3); padding: 2px 6px; border-radius: 5px; direction: ltr; unicode-bidi: isolate; display: inline-block; }
+.faq details { border-bottom: 1.5px solid var(--line); }
+.faq summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 11px 0; font-size: 14.5px; font-weight: 500; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq .q { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; border: 1.5px solid var(--stroke); background: var(--c); flex: none; }
+.faq summary::after { content: "+"; margin-inline-start: auto; font-size: 20px; line-height: 1; transition: transform .2s; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq p { margin: 0 38px 14px 0; font-size: 13.5px; color: var(--ink-2); }
 
-footer { border-top: 1px solid var(--rule); padding: 28px 0 40px; color: var(--ink-3); font-size: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px; }
-footer a { color: var(--ink-2); }
+/* info cards */
+.infos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.info { display: flex; gap: 12px; align-items: center; background: #fff; border: 1.5px solid var(--stroke); border-inline-start: 8px solid var(--c); border-radius: 12px; padding: 12px 14px; text-decoration: none; }
+.info svg { width: 30px; height: 30px; flex: none; }
+.info b { display: block; font-weight: 500; font-size: 14px; }
+.info small { color: var(--ink-3); font-size: 12px; }
+.foot-note { text-align: center; font-weight: 500; font-size: 14px; margin: 18px 0 0; }
 
-@media (max-width: 900px) {
-  .hero { grid-template-columns: 1fr; gap: 28px; padding-top: 16px; }
-  .shelf { height: 200px; order: -1; }
-  .spine { height: calc(var(--h, 260px) * .62); width: calc(var(--w, 46px) * .8); }
-  .spine b { font-size: 12px; }
-  .platforms, .steps, .features { grid-template-columns: 1fr; }
-  .note { grid-template-columns: 1fr; }
-  .stats { grid-template-columns: repeat(2, 1fr); }
-  .stat:nth-child(3) { border-inline-start: 0; }
-  .stat:nth-child(n+3) { border-top: 1px solid var(--rule); }
-  .top nav { display: none; }
+/* download sheet */
+.sheet-back { position: fixed; inset: 0; background: rgb(29 28 26 / .45); display: none; align-items: flex-end; justify-content: center; z-index: 50; padding: 12px; }
+.sheet-back.open { display: flex; }
+.sheet { width: min(520px, 100%); background: var(--slide); border: 2px solid var(--stroke); border-radius: 22px; padding: 22px 20px 18px; max-height: calc(100vh - 24px); overflow: auto; animation: up .22s ease-out; }
+@keyframes up { from { transform: translateY(30px); opacity: 0; } }
+.sheet h3 { margin: 0; font-size: 19px; font-weight: 600; }
+.sheet .file { color: var(--ink-3); font-size: 12.5px; margin: 2px 0 12px; direction: ltr; text-align: right; word-break: break-all; }
+.sheet .status { display: flex; gap: 10px; align-items: flex-start; background: var(--green-soft); border: 1.5px solid var(--stroke); border-radius: 12px; padding: 10px 12px; font-size: 13.5px; }
+.spin { width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid var(--green); border-top-color: transparent; animation: r .9s linear infinite; flex: none; margin-top: 4px; }
+@keyframes r { to { transform: rotate(360deg); } }
+.sheet .or { font-size: 13.5px; color: var(--ink-2); margin: 14px 0 8px; }
+.way { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; font-size: 13.5px; }
+.way .n { width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid var(--stroke); background: var(--c); display: grid; place-items: center; font-size: 12px; flex: none; margin-top: 1px; }
+.sheet .biglink { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 6px 0 4px; padding: 13px; border-radius: 14px; border: 2.5px dashed var(--stroke); background: var(--yellow-soft); text-decoration: none; font-weight: 600; font-size: 14px; direction: ltr; -webkit-touch-callout: default; }
+.sheet .biglink svg { width: 20px; height: 20px; flex: none; }
+.copyrow { display: flex; gap: 8px; align-items: stretch; margin-top: 6px; }
+.copyrow code { flex: 1; user-select: all; -webkit-user-select: all; display: block; padding: 8px 10px; font-size: 11.5px; text-align: left; }
+.btn2 { border: 1.5px solid var(--stroke); background: #fff; border-radius: 10px; padding: 6px 14px; cursor: pointer; font-weight: 500; font-size: 13.5px; white-space: nowrap; }
+.btn2:hover { background: var(--blue-soft); }
+.sheet .close { display: block; margin: 16px auto 0; }
+
+@media (max-width: 880px) {
+  .deck { grid-template-columns: 1fr; }
+  .platforms { grid-template-columns: 1fr; }
+  .facts { grid-template-columns: 1fr 1fr; gap: 22px 10px; }
+  .features { grid-template-columns: 1fr; }
+  .feat:nth-last-child(2) { border-bottom: 1.5px solid var(--line); }
+  .cols, .infos { grid-template-columns: 1fr; }
 }
-@media (max-width: 420px) {
-  .btn.primary { width: 100%; justify-content: center; }
-  .shelf .spine:nth-child(n+6) { display: none; }
-  .stat strong { font-size: 26px; }
+@media (max-width: 560px) {
+  .deck { width: calc(100% - 16px); margin-top: 8px; gap: 10px; }
+  .slide { padding: 26px 16px 22px; border-radius: 18px; }
+  .hero { padding: 26px 14px 0; }
+  .hero .corner { display: none; }
+  .timeline { grid-template-columns: 1fr; gap: 18px; }
+  .track { display: none; }
+  .step { display: grid; grid-template-columns: 52px 1fr; text-align: right; align-items: center; column-gap: 12px; }
+  .step .lbl, .step .dot { display: none; }
+  .step svg { grid-row: span 2; margin: 0; }
+  .step p { margin: 0; max-width: none; }
+  .big { width: 100%; justify-content: center; }
 }
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition: none !important; }
-  html { scroll-behavior: auto; }
-}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header class="top">
-    <a class="brand" href="#">
-      <svg viewBox="0 0 40 40" aria-hidden="true">
-        <rect x="2" y="2" width="36" height="36" rx="9" fill="var(--rubric)"/>
-        <path d="M9 12c4-1.4 7.5-1 11 1.4C23.5 11 27 10.6 31 12v16c-4-1.4-7.5-1-11 1.4C16.5 27 13 26.6 9 28z" fill="none" stroke="var(--on-rubric)" stroke-width="2" stroke-linejoin="round"/>
-        <path d="M20 13.4V29.4" stroke="var(--on-rubric)" stroke-width="2"/>
-      </svg>
-      الموسوعة الإباضية
-    </a>
-    <nav aria-label="أقسام الصفحة">
-      <a href="#download">التنزيل</a>
-      <a href="#install">التثبيت</a>
-      <a href="#features">المزايا</a>
-      <a href="#faq">أسئلة</a>
-    </nav>
-  </header>
+<main class="deck">
 
-  <main>
-    <div class="hero">
-      <div>
-        <p class="eyebrow">مكتبة إلكترونية مجّانية</p>
-        <h1>الموسوعة <span class="rub">الإباضية</span></h1>
-        <p class="lede">آلاف الكتب في برنامج واحد: اقرأ، وابحث في المكتبة كلّها في لحظة، واحفظ مواضعك وملاحظاتك. يعمل بلا إنترنت، وتصله الكتب الجديدة تلقائيًا.</p>
-        <div class="cta">
-          <a class="btn primary" id="primary" href="https://github.com/8u9i/ibadi-encyclopedia/releases/latest/download/Ibadi-Encyclopedia-Setup-2.2.0-x64.exe">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
-            <span><span id="primary-label">تنزيل لويندوز</span><span class="sub" id="primary-sub">الإصدار ٢٫٢ · ١١٢ م.ب</span></span>
-          </a>
-          <span class="cta-alt">أو <a href="#download">اختر نظامًا آخر</a></span>
-        </div>
-        <div class="meta"><span>مجّاني</span><span>بلا إعلانات</span><span>فُحص بمضادّ الفيروسات</span></div>
-      </div>
-      <div class="shelf" aria-hidden="true">
-        <div class="spine" style="--c1:#7d2e24;--c2:#5c1f18;--h:250px;--d:.05s"><b>الإيضاح</b></div>
-        <div class="spine" style="--c1:#2b3a52;--c2:#1c2638;--h:290px;--w:52px;--d:.1s"><b>بيان الشرع</b></div>
-        <div class="spine" style="--c1:#4a5230;--c2:#323820;--h:230px;--d:.15s"><b>المصنَّف</b></div>
-        <div class="spine" style="--c1:#6a4423;--c2:#4a2e16;--h:300px;--w:56px;--d:.2s"><b>شرح النيل</b></div>
-        <div class="spine" style="--c1:#5a2a35;--c2:#3e1c24;--h:260px;--d:.25s"><b>قاموس الشريعة</b></div>
-        <div class="spine" style="--c1:#2f4a48;--c2:#1f3331;--h:240px;--w:42px;--d:.3s"><b>الجامع</b></div>
-        <div class="spine" style="--c1:#6e5a2a;--c2:#4d3e1c;--h:280px;--d:.35s"><b>طلعة الشمس</b></div>
-        <div class="spine tilt" style="--c1:#3b3530;--c2:#27231f;--h:250px;--w:48px;--d:.4s"><b>تمهيد القواعد</b></div>
-      </div>
+  <section class="slide wide hero" aria-labelledby="t-hero">
+    <p class="kicker">أهلًا بك في</p>
+    <h1 id="t-hero">الموسوعة الإباضية</h1>
+    <div class="hero-cta">
+      <a class="big" id="primary" download href="https://github.com/8u9i/ibadi-encyclopedia/releases/download/v2.2.0/Ibadi-Encyclopedia-Setup-2.2.0-x64.exe">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5v12m0 0-5-5m5 5 5-5M4.5 20h15"/></svg>
+        <span><b id="primary-label">تنزيل لويندوز</b><small id="primary-sub">الإصدار ٢٫٢ · ١١٢ م.ب · مجّاني</small></span>
+      </a>
+      <a class="link-alt" href="#download">أنظمة أخرى ↓</a>
     </div>
+    <svg class="hero-art" viewBox="0 0 860 300" role="img" aria-label="رسم: قلم وكتب وحاسوب يعرض المكتبة">
+      <g stroke="#1d1c1a" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">
+        <g transform="rotate(-28 150 190)">
+          <rect x="40" y="168" width="200" height="40" rx="6" fill="#ee6b4d"/>
+          <path d="M40 182h200M40 194h200" fill="none" opacity=".3"/>
+          <rect x="18" y="168" width="24" height="40" rx="6" fill="#f39ab1"/>
+          <rect x="36" y="168" width="14" height="40" fill="#cfcac0"/>
+          <path d="M240 168l46 20-46 20z" fill="#f6d9a8"/>
+          <path d="M272 182l14 6-14 6z" fill="#1d1c1a"/>
+        </g>
+        <rect x="150" y="238" width="170" height="30" rx="5" fill="#7d8fd8"/>
+        <path d="M162 238v30" fill="none"/>
+        <rect x="162" y="208" width="150" height="30" rx="5" fill="#f2b43c"/>
+        <path d="M296 208v30" fill="none"/>
+        <rect x="140" y="178" width="160" height="30" rx="5" fill="#7fa58f"/>
+        <path d="M154 178v30" fill="none"/>
+        <path d="M180 193h70" fill="none" opacity=".5"/>
+        <path d="M300 80h260a14 14 0 0 1 14 14v150H286V94a14 14 0 0 1 14-14z" fill="#fff"/>
+        <rect x="300" y="96" width="260" height="134" rx="6" fill="#f8f6f1"/>
+        <path d="M300 112h260" fill="none"/>
+        <circle cx="548" cy="104" r="2.5" fill="#1d1c1a"/><circle cx="538" cy="104" r="2.5" fill="#1d1c1a"/>
+        <rect x="490" y="124" width="36" height="48" rx="3" fill="#ee6b4d"/>
+        <rect x="446" y="124" width="36" height="48" rx="3" fill="#7d8fd8"/>
+        <rect x="402" y="124" width="36" height="48" rx="3" fill="#f2b43c"/>
+        <rect x="358" y="124" width="36" height="48" rx="3" fill="#7fa58f"/>
+        <rect x="314" y="124" width="36" height="48" rx="3" fill="#f39ab1"/>
+        <path d="M542 186h-90M542 198h-150M542 210h-110" fill="none" stroke-width="2.5" opacity=".45"/>
+        <path d="M262 244h336l-18 22H280z" fill="#d9d4c9"/>
+        <path d="M402 244h56" fill="none"/>
+        <path d="M618 70c-12-26 30-44 50-24 14-22 56-14 56 12 26-2 36 30 16 42 14 24-18 44-40 30-14 20-52 16-56-6-28 6-44-30-26-54z" fill="#fff"/>
+        <path d="M640 150l-20 30 36-18" fill="#fff"/>
+        <circle cx="660" cy="96" r="7" fill="#1d1c1a"/><circle cx="684" cy="96" r="7" fill="#1d1c1a"/><circle cx="708" cy="96" r="7" fill="#1d1c1a"/>
+        <path d="M600 222c34-16 66-14 96 4 30-18 62-20 96-4v50c-34-14-66-12-96 6-30-18-62-20-96-6z" fill="#fde5ec"/>
+        <path d="M696 226v52" fill="none"/>
+        <path d="M618 238c20-6 40-6 60 2M618 252c20-6 40-6 60 2M714 240c20-8 40-8 60-2M714 254c20-8 40-8 60-2" fill="none" stroke-width="2.2" opacity=".5"/>
+        <circle cx="96" cy="70" r="26" fill="#e3e8fa"/>
+        <path d="M115 89l26 26" fill="none" stroke-width="7"/>
+        <path d="M790 40l6 14 14 6-14 6-6 14-6-14-14-6 14-6z" fill="#f2b43c"/>
+        <path d="M250 40l4 9 9 4-9 4-4 9-4-9-9-4 9-4z" fill="#f2b43c"/>
+        <path d="M560 30l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#b49ce4"/>
+      </g>
+      <path d="M0 296h860" stroke="#1d1c1a" stroke-width="3"/>
+    </svg>
+    <span class="corner r">مكتبة إلكترونية مجّانية</span>
+    <span class="corner l" id="corner-version">الإصدار ٢٫٢</span>
+  </section>
 
-    <div class="stats">
-      <div class="stat"><strong class="num">٢٬٩٣١</strong><span>كتابًا</span></div>
-      <div class="stat"><strong class="num">٧٩٠ ألف</strong><span>صفحة</span></div>
-      <div class="stat"><strong class="num">١٬٣٧١</strong><span>مؤلِّفًا</span></div>
-      <div class="stat"><strong>بلا إنترنت</strong><span>بعد التنزيل الأوّل</span></div>
-    </div>
-
-    <section id="download">
-      <h2>التنزيل</h2>
-      <p class="section-lede">اختر نظام جهازك. يبدأ التنزيل مباشرة. <span id="version-line">الإصدار الحالي: ٢٫٢</span></p>
-      <div class="platforms">
-        <article class="card" data-os="windows">
-          <div class="card-head">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 5.5 10.5 4.4v7.1H3zm8.5-1.2L21 3v8.5h-9.5zM3 12.5h7.5v7.1L3 18.5zm8.5 0H21V21l-9.5-1.3z"/></svg>
-            <h3>ويندوز</h3><span class="tag">جهازك</span>
+  <section class="slide wide" id="download" aria-labelledby="t-dl">
+    <h2 id="t-dl">حمّل البرنامج</h2>
+    <p class="sub">اختر نظام جهازك. التنزيل مجّاني وبلا تسجيل.</p>
+    <div class="platforms">
+      <article class="pcard" data-os="windows" style="--c: var(--red); --soft: var(--red-soft)">
+        <div class="bar"></div>
+        <div class="body">
+          <div class="head">
+            <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="10" fill="#fde4dc" stroke="#1d1c1a" stroke-width="2"/><path d="M10 12.5l8.6-1.2v8.2H10zm10.6-1.5L30 9.6v9.9h-9.4zM10 21.5h8.6v8.2L10 28.5zm10.6 0H30v9.9l-9.4-1.4z" fill="#1d1c1a"/></svg>
+            <h3>ويندوز</h3><span class="mine">جهازك</span>
           </div>
-          <a class="dl main" data-asset="win-x64" href="https://github.com/8u9i/ibadi-encyclopedia/releases/latest/download/Ibadi-Encyclopedia-Setup-2.2.0-x64.exe">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
-            <span class="what"><b>ويندوز ١٠ و١١</b><small>أغلب الأجهزة</small></span><span class="size num">١١٢ م.ب</span>
+          <a class="dl main" data-asset="win-x64" download href="https://github.com/8u9i/ibadi-encyclopedia/releases/download/v2.2.0/Ibadi-Encyclopedia-Setup-2.2.0-x64.exe">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1d1c1a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></span>
+            <span class="t"><b>ويندوز ١٠ و١١</b><small>أغلب الأجهزة</small></span><span class="sz num">١١٢ م.ب</span>
           </a>
-          <a class="dl" data-asset="win-arm64" href="https://github.com/8u9i/ibadi-encyclopedia/releases/latest/download/Ibadi-Encyclopedia-Setup-2.2.0-arm64.exe">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
-            <span class="what"><b>ويندوز على معالج ARM</b><small>Surface Pro X وأجهزة Snapdragon</small></span><span class="size num">١٠٧ م.ب</span>
+          <a class="dl" data-asset="win-arm64" download href="https://github.com/8u9i/ibadi-encyclopedia/releases/download/v2.2.0/Ibadi-Encyclopedia-Setup-2.2.0-arm64.exe">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1d1c1a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></span>
+            <span class="t"><b>معالج ARM</b><small>Surface Pro X وأجهزة Snapdragon</small></span><span class="sz num">١٠٧ م.ب</span>
           </a>
           <p class="hint">لا يحتاج إلى صلاحيات المدير.</p>
-        </article>
+        </div>
+      </article>
 
-        <article class="card" data-os="mac">
-          <div class="card-head">
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.1 1-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.2-.8s1.9.8 3.2.8 2.1-1.2 2.9-2.4c.9-1.4 1.3-2.7 1.3-2.8 0 0-2.5-1-2.5-3.9zM14 5.5c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.4z"/></svg>
-            <h3>ماك</h3><span class="tag">جهازك</span>
+      <article class="pcard" data-os="mac" style="--c: var(--green); --soft: var(--green-soft)">
+        <div class="bar"></div>
+        <div class="body">
+          <div class="head">
+            <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="10" fill="#e1ede5" stroke="#1d1c1a" stroke-width="2"/><path d="M24.6 20.8c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9-.8 0-1.9-.9-3.1-.8-1.6 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3.1.7 2-1.1 2.8-2.3c.9-1.3 1.2-2.6 1.2-2.7 0 0-2.4-.9-2.4-3.7zm-2.3-6.6c.6-.8 1.1-1.8 1-2.9-.9 0-2 .6-2.7 1.4-.6.7-1.1 1.7-1 2.7 1 .1 2-.5 2.7-1.2z" fill="#1d1c1a"/></svg>
+            <h3>ماك</h3><span class="mine">جهازك</span>
           </div>
-          <a class="dl main" data-asset="mac-arm64" href="https://github.com/8u9i/ibadi-encyclopedia/releases/latest/download/Ibadi-Encyclopedia-2.2.0-mac-arm64.dmg">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
-            <span class="what"><b>معالج Apple</b><small>M1 وما بعده</small></span><span class="size num">١٠٩ م.ب</span>
+          <a class="dl main" data-asset="mac-arm64" download href="https://github.com/8u9i/ibadi-encyclopedia/releases/download/v2.2.0/Ibadi-Encyclopedia-2.2.0-mac-arm64.dmg">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1d1c1a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></span>
+            <span class="t"><b>معالج Apple</b><small>M1 وما بعده</small></span><span class="sz num">١٠٩ م.ب</span>
           </a>
-          <a class="dl" data-asset="mac-x64" href="https://github.com/8u9i/ibadi-encyclopedia/releases/latest/download/Ibadi-Encyclopedia-2.2.0-mac-x64.dmg">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
-            <span class="what"><b>معالج Intel</b><small>أجهزة ما قبل ٢٠٢١</small></span><span class="size num">١١١ م.ب</span>
+          <a class="dl" data-asset="mac-x64" download href="https://github.com/8u9i/ibadi-encyclopedia/releases/download/v2.2.0/Ibadi-Encyclopedia-2.2.0-mac-x64.dmg">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1d1c1a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></span>
+            <span class="t"><b>معالج Intel</b><small>أجهزة ما قبل ٢٠٢١</small></span><span class="sz num">١١١ م.ب</span>
           </a>
-          <p class="hint">لا تعرف معالجك؟ من قائمة Apple ← «حول هذا الماك».</p>
-        </article>
+          <p class="hint">لمعرفة معالجك: قائمة Apple ← «حول هذا الماك».</p>
+        </div>
+      </article>
 
-        <article class="card" data-os="linux">
-          <div class="card-head">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5c-2.2 0-3.4 1.9-3.4 4.4 0 1.3.2 2.2-.6 3.5-1.2 1.9-3.2 4.3-3.2 7 0 1 .4 1.6 1.2 1.9-.3.7-.1 1.7 1 1.9 1.3.3 2.6-.6 3.7-.6h2.6c1.1 0 2.4.9 3.7.6 1.1-.2 1.3-1.2 1-1.9.8-.3 1.2-.9 1.2-1.9 0-2.7-2-5.1-3.2-7-.8-1.3-.6-2.2-.6-3.5 0-2.5-1.2-4.4-3.4-4.4z"/><circle cx="10.4" cy="7.2" r=".9" fill="currentColor"/><circle cx="13.6" cy="7.2" r=".9" fill="currentColor"/><path d="M10.6 9.4h2.8l-1.4 1.2z" fill="currentColor"/></svg>
-            <h3>لينكس</h3><span class="tag">جهازك</span>
+      <article class="pcard" data-os="linux" style="--c: var(--yellow); --soft: var(--yellow-soft)">
+        <div class="bar"></div>
+        <div class="body">
+          <div class="head">
+            <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="2" width="36" height="36" rx="10" fill="#fdf0d2" stroke="#1d1c1a" stroke-width="2"/><path d="M20 8.5c-2.2 0-3.4 1.9-3.4 4.4 0 1.3.2 2.2-.6 3.5-1.2 1.9-3.2 4.3-3.2 7 0 1 .4 1.6 1.2 1.9-.3.7-.1 1.7 1 1.9 1.3.3 2.6-.6 3.7-.6h2.6c1.1 0 2.4.9 3.7.6 1.1-.2 1.3-1.2 1-1.9.8-.3 1.2-.9 1.2-1.9 0-2.7-2-5.1-3.2-7-.8-1.3-.6-2.2-.6-3.5 0-2.5-1.2-4.4-3.4-4.4z" fill="#fff" stroke="#1d1c1a" stroke-width="1.8" stroke-linejoin="round"/><circle cx="18.4" cy="13.2" r=".9" fill="#1d1c1a"/><circle cx="21.6" cy="13.2" r=".9" fill="#1d1c1a"/><path d="M18.6 15.4h2.8L20 16.6z" fill="#f2b43c" stroke="#1d1c1a" stroke-width=".8"/></svg>
+            <h3>لينكس</h3><span class="mine">جهازك</span>
           </div>
-          <a class="dl main" data-asset="linux-deb" href="https://github.com/8u9i/ibadi-encyclopedia/releases/latest/download/Ibadi-Encyclopedia-2.2.0-linux-amd64.deb">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
-            <span class="what"><b>أوبونتو وديبيان</b><small>ملفّ ‎.deb</small></span><span class="size num">٩٨ م.ب</span>
+          <a class="dl main" data-asset="linux-deb" download href="https://github.com/8u9i/ibadi-encyclopedia/releases/download/v2.2.0/Ibadi-Encyclopedia-2.2.0-linux-amd64.deb">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1d1c1a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></span>
+            <span class="t"><b>أوبونتو وديبيان</b><small>ملفّ ‎.deb</small></span><span class="sz num">٩٨ م.ب</span>
           </a>
-          <a class="dl" data-asset="linux-appimage" href="https://github.com/8u9i/ibadi-encyclopedia/releases/latest/download/Ibadi-Encyclopedia-2.2.0-linux-x86_64.AppImage">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19h14"/></svg>
-            <span class="what"><b>أيّ توزيعة</b><small>ملفّ AppImage</small></span><span class="size num">٩٩ م.ب</span>
+          <a class="dl" data-asset="linux-appimage" download href="https://github.com/8u9i/ibadi-encyclopedia/releases/download/v2.2.0/Ibadi-Encyclopedia-2.2.0-linux-x86_64.AppImage">
+            <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1d1c1a" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></span>
+            <span class="t"><b>أيّ توزيعة</b><small>ملفّ AppImage</small></span><span class="sz num">٩٩ م.ب</span>
           </a>
-          <p class="hint">لأجهزة ‎64-bit (x86_64).</p>
-        </article>
+          <p class="hint">لأجهزة ‎64-bit.</p>
+        </div>
+      </article>
+    </div>
+    <p class="made-for">مكتبة كاملة على جهازك، فلنبدأ!</p>
+  </section>
+
+  <section class="slide wide" aria-labelledby="t-steps">
+    <h2 id="t-steps">ثلاث خطوات وتبدأ القراءة</h2>
+    <p class="sub">لا يحتاج التثبيت إلى أيّ خبرة.</p>
+    <div class="timeline">
+      <div class="track" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="step">
+        <div class="lbl">الخطوة ١</div><div class="dot"></div>
+        <svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="6" width="36" height="36" rx="10" fill="#e3e8fa" stroke="#1d1c1a" stroke-width="2.5"/><path d="M24 14v15m0 0-6-6m6 6 6-6M15 34h18" fill="none" stroke="#1d1c1a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h3>نزّل الملفّ</h3><p>اضغط زرّ نظام جهازك أعلاه.</p>
       </div>
-    </section>
-
-    <section id="install">
-      <h2>ثلاث خطوات <span class="rub">وتبدأ القراءة</span></h2>
-      <p class="section-lede">لا يحتاج التثبيت إلى خبرة.</p>
-      <ol class="steps">
-        <li><h3>نزّل الملفّ</h3><p>اضغط زرّ التنزيل المناسب لجهازك أعلاه.</p></li>
-        <li><h3>افتحه وثبّته</h3><p>افتح الملفّ من مجلّد التنزيلات واتبع الخطوات. على ماك: اسحب البرنامج إلى مجلّد Applications.</p></li>
-        <li><h3>نزّل المكتبة</h3><p>عند أوّل تشغيل اضغط «تنزيل المكتبة» (١٫٢ غ.ب). يمكنك إيقافه ومتابعته لاحقًا.</p></li>
-      </ol>
-      <div class="note">
-        <div><b>ويندوز:</b> إن ظهرت نافذة زرقاء «<bdi dir="ltr" style="white-space:nowrap">Windows protected your PC</bdi>» فاضغط <kbd>More info</kbd> ثمّ <kbd>Run anyway</kbd>. البرنامج سليم، لكنّه جديد وغير موقَّع رقميًّا بعد.</div>
-        <div><b>ماك:</b> افتح البرنامج أوّل مرّة بالنقر عليه <b>بالزرّ الأيمن</b> ثمّ <kbd>Open</kbd> ← <kbd>Open</kbd>. بعدها يفتح عاديًّا.</div>
+      <div class="step">
+        <div class="lbl">الخطوة ٢</div><div class="dot"></div>
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6l4 4h5.5v5.5l4 4-4 4v5.5H28l-4 4-4-4h-5.5V23.5l-4-4 4-4V10H20z" fill="#fdf0d2" stroke="#1d1c1a" stroke-width="2.5" stroke-linejoin="round"/><circle cx="24" cy="19.5" r="5" fill="#f2b43c" stroke="#1d1c1a" stroke-width="2.5"/><path d="M14 40h20" stroke="#1d1c1a" stroke-width="3" stroke-linecap="round"/></svg>
+        <h3>ثبّته</h3><p>افتح الملفّ واتبع الخطوات. على ماك: اسحبه إلى Applications.</p>
       </div>
-    </section>
-
-    <section id="features">
-      <h2>ما الذي <span class="rub">ستجده</span></h2>
-      <p class="section-lede">صُمّم للقراءة الطويلة والبحث الدقيق في التراث.</p>
-      <div class="features">
-        <div class="feature"><h3>بحث في المكتبة كلّها</h3><p>بكلّ الكلمات أو بعبارة متّصلة أو بالجذر، مع تجاهل الحركات والهمزات. النتائج في أقلّ من ثانية.</p></div>
-        <div class="feature"><h3>قراءة مريحة</h3><p>صفحةً صفحة أو بتمرير متّصل، وفهرس للكتاب، وحواشٍ قابلة للنقر، وأرقام الطبعة الورقية.</p></div>
-        <div class="feature"><h3>القرآن الكريم</h3><p>بالرسم العثماني، مع روابط مباشرة إلى مواضع الآية في كتب التفسير.</p></div>
-        <div class="feature"><h3>تراجم المؤلّفين</h3><p>١٬٣٧١ مؤلّفًا مرتّبين بسنة الوفاة، مع سيرهم وأعمالهم.</p></div>
-        <div class="feature"><h3>علامات وملاحظات</h3><p>احفظ مواضعك، وأضف ملاحظاتك، وعُد إلى آخر صفحة قرأتها.</p></div>
-        <div class="feature"><h3>كتب جديدة تلقائيًا</h3><p>تصل الكتب الجديدة والمصحَّحة في تحديثات صغيرة دون إعادة تنزيل المكتبة.</p></div>
+      <div class="step">
+        <div class="lbl">الخطوة ٣</div><div class="dot"></div>
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 13c6-3 12-3 18 1 6-4 12-4 18-1v24c-6-3-12-3-18 1-6-4-12-4-18-1z" fill="#fde4dc" stroke="#1d1c1a" stroke-width="2.5" stroke-linejoin="round"/><path d="M24 14v24" stroke="#1d1c1a" stroke-width="2.5"/><path d="M11 20c3-1 6-1 9 0M11 26c3-1 6-1 9 0M28 20c3-1 6-1 9 0M28 26c3-1 6-1 9 0" stroke="#1d1c1a" stroke-width="2" stroke-linecap="round" opacity=".5"/></svg>
+        <h3>نزّل المكتبة واقرأ</h3><p>عند أوّل تشغيل اضغط «تنزيل المكتبة» (١٫٢ غ.ب) مرّة واحدة.</p>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section id="faq">
-      <h2>أسئلة شائعة</h2>
-      <details><summary>هل البرنامج مجّاني؟</summary><p>نعم، مجّاني بالكامل وبلا إعلانات.</p></details>
-      <details><summary>كم مساحة يحتاج؟</summary><p>البرنامج نحو ١١٠ م.ب، والمكتبة نحو ٣٫٤ غ.ب على القرص بعد التنزيل (حجم التنزيل ١٫٢ غ.ب).</p></details>
-      <details><summary>هل يعمل بلا إنترنت؟</summary><p>نعم. يحتاج الإنترنت مرّة واحدة لتنزيل المكتبة، ثمّ يعمل بلا اتصال. وعند الاتّصال يتحقّق من وجود كتب جديدة.</p></details>
-      <details><summary>لماذا يحذّرني ويندوز عند التثبيت؟</summary><p>لأنّ البرنامج جديد وغير موقَّع رقميًّا بعد، فيعرض ويندوز تنبيه SmartScreen. فُحصت الملفّات بمضادّ الفيروسات Microsoft Defender فلم يُعثر فيها على شيء. اضغط More info ثمّ Run anyway.</p></details>
-      <details><summary>ماك يقول إنّ البرنامج «تالف» (damaged)</summary><p>افتح تطبيق Terminal والصق هذا الأمر ثمّ اضغط Enter، وافتح البرنامج من جديد: <code>xattr -cr "/Applications/Ibadi Encyclopedia.app"</code></p></details>
-      <details><summary>عندي إصدار أقدم، كيف أحدّثه؟</summary><p>نزّل الإصدار الجديد وثبّته فوق القديم. تبقى مكتبتك وعلاماتك كما هي، ولا تحتاج إلى تنزيل المكتبة من جديد.</p></details>
-    </section>
-  </main>
+  <section class="slide" aria-labelledby="t-facts">
+    <h2 id="t-facts">بالأرقام</h2>
+    <p class="sub">ما ستجده بعد التثبيت</p>
+    <div class="facts">
+      <div class="fact" style="--c: var(--blue)"><span class="pill">كتب</span><strong class="num">٢٬٩٣١</strong><span>كتابًا</span></div>
+      <div class="fact" style="--c: var(--yellow)"><span class="pill">صفحات</span><strong class="num">٧٩٠ ألف</strong><span>صفحة</span></div>
+      <div class="fact" style="--c: var(--green)"><span class="pill">مؤلّفون</span><strong class="num">١٬٣٧١</strong><span>مؤلّفًا</span></div>
+      <div class="fact" style="--c: var(--red)"><span class="pill">تصنيفات</span><strong class="num">٤٦</strong><span>تصنيفًا</span></div>
+      <div class="fact" style="--c: var(--pink)"><span class="pill">القرآن</span><strong class="num">١١٤</strong><span>سورة بالرسم العثماني</span></div>
+      <div class="fact" style="--c: var(--purple)"><span class="pill">الإنترنت</span><strong>غير لازم</strong><span>بعد التنزيل الأوّل</span></div>
+    </div>
+  </section>
 
-  <footer>
-    <span>الموسوعة الإباضية · <span id="foot-version">الإصدار ٢٫٢</span></span>
-    <span><a id="sums" href="https://github.com/8u9i/ibadi-encyclopedia/releases/latest/download/SHA256SUMS.txt">بصمات الملفّات (SHA-256)</a> · <a href="https://ibadi.net" rel="noopener">ibadi.net</a></span>
-  </footer>
+  <section class="slide" aria-labelledby="t-feat">
+    <h2 id="t-feat">كيف ستستخدمه</h2>
+    <p class="sub">صُمّم للقراءة الطويلة والبحث الدقيق</p>
+    <div class="features">
+      <div class="feat" style="--c: var(--blue-soft)"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1d1c1a" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg></span><div><b>بحث في المكتبة كلّها</b><small>بالكلمة أو العبارة أو الجذر، في أقلّ من ثانية</small></div></div>
+      <div class="feat" style="--c: var(--yellow-soft)"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1d1c1a" stroke-width="2.4" stroke-linejoin="round"><path d="M4 6c3-1.5 6-1.5 8 .5 2-2 5-2 8-.5v12c-3-1.5-6-1.5-8 .5-2-2-5-2-8-.5z"/><path d="M12 6.5v12"/></svg></span><div><b>قراءة مريحة</b><small>صفحةً صفحة أو بتمرير متّصل، مع الفهرس والحواشي</small></div></div>
+      <div class="feat" style="--c: var(--green-soft)"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1d1c1a" stroke-width="2.4" stroke-linejoin="round"><path d="M12 3l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.4l-5.2 2.7 1-5.8L3.5 9.2l5.9-.8z"/></svg></span><div><b>القرآن والتفسير</b><small>الآيات بالرسم العثماني مع روابط كتب التفسير</small></div></div>
+      <div class="feat" style="--c: var(--pink-soft)"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1d1c1a" stroke-width="2.4" stroke-linejoin="round"><path d="M7 3.5h10v17l-5-3.5-5 3.5z"/></svg></span><div><b>علامات وملاحظات</b><small>احفظ مواضعك وعُد إلى آخر صفحة قرأتها</small></div></div>
+      <div class="feat" style="--c: var(--purple-soft)"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1d1c1a" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.2-4 4-6 7.5-6s6.3 2 7.5 6"/></svg></span><div><b>تراجم المؤلّفين</b><small>مرتّبون بسنة الوفاة، مع سيرهم وأعمالهم</small></div></div>
+      <div class="feat" style="--c: var(--red-soft)"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#1d1c1a" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v4h-4"/></svg></span><div><b>كتب جديدة تلقائيًا</b><small>تصل في تحديثات صغيرة دون إعادة التنزيل</small></div></div>
+    </div>
+  </section>
+
+  <section class="slide wide" aria-labelledby="t-warn">
+    <h2 id="t-warn">قبل أن تثبّت</h2>
+    <p class="sub">تنبيهات قد تظهر لك أوّل مرّة، وكلّها طبيعية</p>
+    <div class="cols">
+      <div class="col" style="--c: var(--blue)">
+        <div class="h">ويندوز</div>
+        <ul>
+          <li><span>إن ظهرت نافذة زرقاء <kbd>Windows protected your PC</kbd> فاضغط <kbd>More info</kbd> ثمّ <kbd>Run anyway</kbd>.</span></li>
+          <li><span>تظهر لأنّ البرنامج جديد وغير موقَّع رقميًّا بعد، وقد فُحص بمضادّ الفيروسات فلم يُعثر فيه على شيء.</span></li>
+          <li><span>لا يطلب صلاحيات المدير، ويُثبَّت لحسابك فقط.</span></li>
+        </ul>
+      </div>
+      <div class="col" style="--c: var(--yellow)">
+        <div class="h">ماك</div>
+        <ul>
+          <li><span>افتح ملفّ ‎.dmg واسحب البرنامج إلى مجلّد Applications.</span></li>
+          <li><span>أوّل مرّة فقط: انقر البرنامج <b>بالزرّ الأيمن</b> ثمّ <kbd>Open</kbd> ← <kbd>Open</kbd>.</span></li>
+          <li><span>إن قال إنّه «تالف» (damaged) فنفّذ في Terminal: <code>xattr -cr "/Applications/Ibadi Encyclopedia.app"</code></span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide" aria-labelledby="t-faq">
+    <h2 id="t-faq">أسئلة شائعة</h2>
+    <p class="sub">إجابات سريعة</p>
+    <div class="faq">
+      <details><summary><span class="q" style="--c: var(--pink)">١</span>هل البرنامج مجّاني؟</summary><p>نعم، مجّاني بالكامل وبلا إعلانات.</p></details>
+      <details><summary><span class="q" style="--c: var(--blue)">٢</span>كم مساحة يحتاج؟</summary><p>البرنامج نحو ١١٠ م.ب، والمكتبة ٣٫٤ غ.ب على القرص (حجم التنزيل ١٫٢ غ.ب).</p></details>
+      <details><summary><span class="q" style="--c: var(--red)">٣</span>هل يعمل بلا إنترنت؟</summary><p>نعم، بعد تنزيل المكتبة مرّة واحدة. وعند الاتّصال يتحقّق من الكتب الجديدة.</p></details>
+      <details><summary><span class="q" style="--c: var(--yellow)">٤</span>عندي إصدار أقدم، كيف أحدّثه؟</summary><p>ثبّت الإصدار الجديد فوقه، وتبقى مكتبتك وعلاماتك كما هي.</p></details>
+      <details><summary><span class="q" style="--c: var(--purple)">٥</span>لم يبدأ التنزيل، ماذا أفعل؟</summary><p>اضغط مطوّلًا على زرّ التنزيل واختر «تنزيل الرابط»، أو انقر عليه بالزرّ الأيمن واختر «حفظ الرابط باسم…».</p></details>
+    </div>
+  </section>
+
+  <section class="slide" aria-labelledby="t-info">
+    <h2 id="t-info">معلومات الإصدار</h2>
+    <p class="sub">للتحقّق والمراجعة</p>
+    <div class="infos">
+      <div class="info" style="--c: var(--yellow)"><svg viewBox="0 0 32 32" fill="none" stroke="#1d1c1a" stroke-width="2.2" stroke-linejoin="round"><rect x="5" y="7" width="22" height="20" rx="4" fill="#fdf0d2"/><path d="M5 13h22M11 4v6M21 4v6"/></svg><div><b>الإصدار</b><small id="info-version">٢٫٢</small></div></div>
+      <div class="info" style="--c: var(--green)"><svg viewBox="0 0 32 32" fill="none" stroke="#1d1c1a" stroke-width="2.2" stroke-linejoin="round"><path d="M16 4l10 4v8c0 6-4.5 10-10 12C10.5 26 6 22 6 16V8z" fill="#e1ede5"/><path d="M11.5 16l3 3 6-6" stroke-linecap="round"/></svg><div><b>فحص الفيروسات</b><small>Microsoft Defender: سليم</small></div></div>
+      <div class="info" style="--c: var(--purple)"><svg viewBox="0 0 32 32" fill="none" stroke="#1d1c1a" stroke-width="2.2" stroke-linejoin="round"><rect x="4" y="8" width="24" height="16" rx="3" fill="#eee7fb"/><path d="M4 12h24"/></svg><div><b>الأنظمة</b><small>ويندوز ١٠+ · ماك ١١+ · لينكس</small></div></div>
+      <a class="info" style="--c: var(--pink)" id="sums" download href="https://github.com/8u9i/ibadi-encyclopedia/releases/download/v2.2.0/SHA256SUMS.txt"><svg viewBox="0 0 32 32" fill="none" stroke="#1d1c1a" stroke-width="2.2" stroke-linejoin="round"><path d="M8 4h11l6 6v18H8z" fill="#fde5ec"/><path d="M19 4v6h6M12 17h9M12 22h6" stroke-linecap="round"/></svg><div><b>بصمات الملفّات</b><small>SHA256SUMS.txt</small></div></a>
+    </div>
+    <p class="foot-note">نتمنّى لك قراءة نافعة ممتعة!</p>
+  </section>
+</main>
+
+<div class="sheet-back" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="sheet">
+    <h3 id="sheet-title">جارٍ تنزيل البرنامج</h3>
+    <div class="file" id="sheet-file"></div>
+    <div class="status"><span class="spin" aria-hidden="true"></span><span>إن لم يبدأ التنزيل خلال ثوانٍ، فالصفحة معروضة داخل عارض يمنع التنزيل المباشر. استخدم إحدى الطريقتين:</span></div>
+    <p class="or"><b>الطريقة الأولى</b></p>
+    <div class="way" style="--c: var(--yellow)"><span class="n">١</span><span id="way-text"></span></div>
+    <a class="biglink" id="sheet-link" download href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
+      <span id="sheet-link-text"></span>
+    </a>
+    <p class="or"><b>الطريقة الثانية</b></p>
+    <div class="way" style="--c: var(--blue)"><span class="n">٢</span><span>انسخ الرابط والصقه في شريط العنوان في متصفّحك.</span></div>
+    <div class="copyrow"><code id="sheet-url"></code><button class="btn2" id="copy" type="button">نسخ</button></div>
+    <button class="btn2 close" id="close" type="button">إغلاق</button>
+  </div>
 </div>
 
 <script>
 (() => {
   const REPO = '8u9i/ibadi-encyclopedia';
-  const ar = (n) => String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[d]).replace(/\./g, '٫');
-  const mb = (bytes) => ar(Math.round(bytes / 1048576)) + ' م.ب';
+  const AR = '٠١٢٣٤٥٦٧٨٩';
+  const ar = (s) => String(s).replace(/\d/g, (d) => AR[d]).replace(/\./g, '٫');
+  const mb = (b) => ar(Math.round(b / 1048576)) + ' م.ب';
   const slots = {
-    'win-x64': /Setup-[\d.]+-x64\.exe$/,
-    'win-arm64': /Setup-[\d.]+-arm64\.exe$/,
-    'mac-arm64': /-mac-arm64\.dmg$/,
-    'mac-x64': /-mac-x64\.dmg$/,
-    'linux-deb': /-linux-amd64\.deb$/,
-    'linux-appimage': /-linux-x86_64\.AppImage$/,
+    'win-x64': /Setup-[\d.]+-x64\.exe$/, 'win-arm64': /Setup-[\d.]+-arm64\.exe$/,
+    'mac-arm64': /-mac-arm64\.dmg$/, 'mac-x64': /-mac-x64\.dmg$/,
+    'linux-deb': /-linux-amd64\.deb$/, 'linux-appimage': /-linux-x86_64\.AppImage$/,
   };
   const primaryFor = {
-    windows: ['win-x64', 'تنزيل لويندوز'],
-    'windows-arm': ['win-arm64', 'تنزيل لويندوز (ARM)'],
-    mac: ['mac-arm64', 'تنزيل لماك'],
-    'mac-intel': ['mac-x64', 'تنزيل لماك (Intel)'],
+    windows: ['win-x64', 'تنزيل لويندوز'], 'windows-arm': ['win-arm64', 'تنزيل لويندوز (ARM)'],
+    mac: ['mac-arm64', 'تنزيل لماك'], 'mac-intel': ['mac-x64', 'تنزيل لماك (Intel)'],
     linux: ['linux-deb', 'تنزيل للينكس'],
   };
   let os = 'windows';
   let version = '2.2.0';
+  const card = (slot) => document.querySelector(`.pcard [data-asset="${slot}"]`);
 
+  // Which computer is this?
   function detect() {
     const ua = navigator.userAgent;
     const p = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
@@ -382,47 +457,118 @@ footer a { color: var(--ink-2); }
     else if (/Linux|X11/i.test(p + ua) && !/Android/i.test(ua)) os = 'linux';
     else os = 'windows';
     if (/ARM64|aarch64/i.test(ua) && os === 'windows') os = 'windows-arm';
-    // Chromium can tell the CPU architecture; Safari and Firefox cannot, so Apple silicon is the default.
     if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
-      return navigator.userAgentData.getHighEntropyValues(['architecture']).then((v) => {
-        if (os === 'mac' && v.architecture === 'x86') os = 'mac-intel';
-        if (os === 'windows' && v.architecture === 'arm') os = 'windows-arm';
-      }).catch(() => {});
+      return navigator.userAgentData.getHighEntropyValues(['architecture'])
+        .then((v) => {
+          if (os === 'mac' && v.architecture === 'x86') os = 'mac-intel';
+          if (os === 'windows' && v.architecture === 'arm') os = 'windows-arm';
+        })
+        .catch(() => {});
     }
     return Promise.resolve();
   }
 
   function applyPrimary() {
     const [slot, label] = primaryFor[os];
-    const link = document.querySelector(`[data-asset="${slot}"]`);
+    const src = card(slot);
     const btn = document.getElementById('primary');
-    btn.href = link.href;
+    btn.href = src.href;
     document.getElementById('primary-label').textContent = label;
-    const size = link.querySelector('.size').textContent;
-    document.getElementById('primary-sub').textContent = `الإصدار ${ar(version.replace(/\.0$/, ''))} · ${size}`;
+    document.getElementById('primary-sub').textContent = `الإصدار ${ar(version.replace(/\.0$/, ''))} · ${src.querySelector('.sz').textContent} · مجّاني`;
     const family = os.split('-')[0];
-    document.querySelectorAll('.card').forEach((c) => c.classList.toggle('mine', c.dataset.os === family));
+    document.querySelectorAll('.pcard').forEach((c) => c.classList.toggle('is-mine', c.dataset.os === family));
   }
 
-  // Always point at the newest release's files (falls back to the links in the page).
+  // Newest release; the links written in the page are the fallback.
   function latest() {
     return fetch(`https://api.github.com/repos/${REPO}/releases/latest`, { headers: { Accept: 'application/vnd.github+json' } })
       .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
       .then((rel) => {
         version = String(rel.tag_name || '').replace(/^v/, '') || version;
+        const assets = rel.assets || [];
         for (const [slot, re] of Object.entries(slots)) {
-          const a = (rel.assets || []).find((x) => re.test(x.name));
-          const el = document.querySelector(`[data-asset="${slot}"]`);
+          const a = assets.find((x) => re.test(x.name));
+          const el = card(slot);
           if (!a || !el) continue;
           el.href = a.browser_download_url;
-          el.querySelector('.size').textContent = mb(a.size);
+          el.querySelector('.sz').textContent = mb(a.size);
         }
+        const sums = assets.find((x) => x.name === 'SHA256SUMS.txt');
+        if (sums) document.getElementById('sums').href = sums.browser_download_url;
         const v = ar(version.replace(/\.0$/, ''));
-        document.getElementById('version-line').textContent = `الإصدار الحالي: ${v}`;
-        document.getElementById('foot-version').textContent = `الإصدار ${v}`;
+        document.getElementById('corner-version').textContent = `الإصدار ${v}`;
+        document.getElementById('info-version').textContent = v;
       })
       .catch(() => {});
   }
+
+  // Downloads inside a viewer: a page shown in a sandboxed frame may not be allowed to start a
+  // download. The click still tries (it works wherever downloads are allowed), and a sheet shows
+  // the two ways that always work: the browser's own link menu, or copying the link.
+  const framed = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+  const touch = matchMedia('(pointer: coarse)').matches;
+  const sheet = document.getElementById('sheet');
+  const fileName = (url) => decodeURIComponent(url.split('/').pop() || '');
+  let lastFocus = null;
+
+  function openSheet(a) {
+    const url = a.href;
+    const name = fileName(url);
+    const what = a.id === 'primary' ? 'البرنامج' : (a.querySelector('b') ? a.querySelector('b').textContent : 'الملفّ');
+    document.getElementById('sheet-title').textContent = 'جارٍ تنزيل ' + what;
+    document.getElementById('sheet-file').textContent = name;
+    const link = document.getElementById('sheet-link');
+    link.href = url;
+    link.setAttribute('download', name);
+    document.getElementById('sheet-link-text').textContent = name;
+    document.getElementById('sheet-url').textContent = url;
+    document.getElementById('way-text').textContent = touch
+      ? 'اضغط مطوّلًا على الزرّ المنقّط بالأسفل، ثمّ اختر «تنزيل الرابط» أو «فتح في علامة تبويب جديدة».'
+      : 'انقر بالزرّ الأيمن على الزرّ المنقّط بالأسفل، ثمّ اختر «حفظ الرابط باسم…» أو «فتح الرابط في علامة تبويب جديدة».';
+    document.getElementById('copy').textContent = 'نسخ';
+    lastFocus = document.activeElement;
+    sheet.classList.add('open');
+    document.getElementById('close').focus({ preventScroll: true });
+  }
+  function closeSheet() {
+    sheet.classList.remove('open');
+    if (lastFocus) lastFocus.focus({ preventScroll: true });
+  }
+
+  document.addEventListener('click', (e) => {
+    const a = e.target.closest('a[download]');
+    if (!a || a.id === 'sheet-link') return;
+    if (framed) setTimeout(() => openSheet(a), 350);
+  });
+  document.getElementById('close').addEventListener('click', closeSheet);
+  sheet.addEventListener('click', (e) => { if (e.target === sheet) closeSheet(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && sheet.classList.contains('open')) closeSheet(); });
+
+  document.getElementById('copy').addEventListener('click', () => {
+    const url = document.getElementById('sheet-url').textContent;
+    const btn = document.getElementById('copy');
+    const done = () => { btn.textContent = 'نُسخ ✓'; };
+    const fallback = () => {
+      const t = document.createElement('textarea');
+      t.value = url;
+      t.setAttribute('readonly', '');
+      t.style.cssText = 'position:fixed;opacity:0;top:0;right:0';
+      document.body.appendChild(t);
+      t.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      t.remove();
+      if (ok) return done();
+      try { window.prompt('انسخ رابط التنزيل:', url); } catch (e) {
+        const r = document.createRange();
+        r.selectNodeContents(document.getElementById('sheet-url'));
+        const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+        btn.textContent = 'حدِّد وانسخ';
+      }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, fallback);
+    else fallback();
+  });
 
   detect().then(applyPrimary);
   Promise.all([detect(), latest()]).then(applyPrimary);
