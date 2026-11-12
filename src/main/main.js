@@ -229,10 +229,9 @@ function createWindow() {
 }
 
 function openExternalSafe(url) {
-  try {
-    const u = new URL(url);
-    if (u.protocol === 'https:' || u.protocol === 'http:' || u.protocol === 'mailto:') shell.openExternal(u.toString());
-  } catch {}
+  if (!URL.canParse(url)) return;
+  const u = new URL(url);
+  if (u.protocol === 'https:' || u.protocol === 'http:' || u.protocol === 'mailto:') shell.openExternal(u.toString());
 }
 
 function buildContextMenu(p) {
@@ -470,7 +469,6 @@ app.on('second-instance', () => {
 });
 
 app.whenReady().then(async () => {
-  if (!app.isPackaged) console.log('userData:', app.getPath('userData'));
   registerProtocol();
   registerIpc();
   buildAppMenu();

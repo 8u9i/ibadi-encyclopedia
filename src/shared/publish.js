@@ -77,9 +77,12 @@ export async function publish({ libDir, workDir, repo = DEFAULT_REPO, tag = DEFA
   log('قراءة بيان المكتبة المنشور');
   for (const n of ['library.json', 'state.json']) fs.rmSync(local(n), { force: true });
   ghRun(gh, ['release', 'download', tag, '--repo', repo, '-p', 'library.json', '-D', workDir, '--clobber'], { retries: 3 });
+  // state.json is absent only before the first --init; any other failure must stop the publish.
   try {
     ghRun(gh, ['release', 'download', tag, '--repo', repo, '-p', 'state.json', '-D', workDir, '--clobber']);
-  } catch {}
+  } catch (e) {
+    if (!/no assets match/i.test(e.message)) throw e;
+  }
   const manifest = JSON.parse(fs.readFileSync(local('library.json'), 'utf8'));
   const latest = Number(manifest.version) || 0;
 

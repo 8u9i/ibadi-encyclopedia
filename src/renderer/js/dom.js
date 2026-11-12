@@ -144,7 +144,7 @@ export function deathSortKey(death, text) {
 
 export function pageLabel(part, num_, parts) {
   const p = num_ != null ? `ص ${num(num_)}` : '';
-  if (parts > 1 && part) return `ج ${num(part)}${p ? ' · ' + p : ''}`;
+  if (parts > 1 && part) return `ج ${num(part)}${p ? '، ' + p : ''}`;
   return p;
 }
 

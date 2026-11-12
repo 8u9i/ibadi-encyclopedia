@@ -115,7 +115,7 @@ export class SettingsView {
         row('المجلّد', status?.path || 'لم يُحدَّد', changeLib),
         row('تسريع الرسوميات', 'مُعطّل افتراضيًا لتقليل استهلاك الذاكرة (~150 م.ب). يسري بعد إعادة التشغيل.', gpu),
         status?.ok
-          ? row('المحتوى', `بُنيت في ${info.built_at ? new Date(info.built_at).toLocaleDateString('ar') : '—'} من الإصدار ${info.source_label || '—'}`, h('span', { class: 'muted num', text: `${num(Number(info.books))} كتابًا · ${num(Number(info.pages))} صفحة` }))
+          ? row('المحتوى', `بُنيت في ${info.built_at ? new Date(info.built_at).toLocaleDateString('ar') : '—'} من الإصدار ${info.source_label || '—'}`, h('span', { class: 'muted num', text: `${num(Number(info.books))} كتابًا، ${num(Number(info.pages))} صفحة` }))
           : null,
       ),
       (this.updateCard = h('div', { class: 'set-card', id: 'updates' })),
@@ -124,7 +124,7 @@ export class SettingsView {
         'div',
         { class: 'set-card' },
         h('h2', { text: 'حول البرنامج' }),
-        row('الموسوعة الإباضية', `الإصدار ${about?.version || ''} · Electron ${about?.electron || ''}`, h('button', { class: 'btn', onclick: () => this.app.shortcutsHelp() }, 'اختصارات لوحة المفاتيح (F1)')),
+        row('الموسوعة الإباضية', `الإصدار ${about?.version || ''}، Electron ${about?.electron || ''}`, h('button', { class: 'btn', onclick: () => this.app.shortcutsHelp() }, 'اختصارات لوحة المفاتيح (F1)')),
         row('الموقع', 'ibadi.net', h('button', { class: 'btn ghost', onclick: () => window.ibadi.openExternal('https://ibadi.net') }, icon('external'), 'زيارة')),
       ),
     );
@@ -173,10 +173,10 @@ export class SettingsView {
     } else if (st.last) {
       const bits = [`أُضيف ${num(st.last.added)}`, `حُدِّث ${num(st.last.updated)}`];
       if (st.last.removed) bits.push(`أُزيل ${num(st.last.removed)}`);
-      state = h('span', { class: 'muted', text: `${when(st.last.at)} · ${bits.join('، ')}` });
+      state = h('span', { class: 'muted', text: `${when(st.last.at)}، ${bits.join('، ')}` });
     } else state = h('span', { class: 'muted', text: st.lastCheck ? 'مكتبتك محدَّثة' : 'لم يُتحقَّق بعد' });
 
-    const version = st.installed == null ? '—' : `الإصدار ${num(st.installed)}${st.lastCheck ? ` · آخر تحقّق ${when(st.lastCheck)}` : ''}`;
+    const version = st.installed == null ? '—' : `الإصدار ${num(st.installed)}${st.lastCheck ? `، آخر تحقّق ${when(st.lastCheck)}` : ''}`;
     const rows = [
       h('h2', { text: 'تحديثات المكتبة' }),
       h('p', { class: 'muted', style: { margin: '6px 0 4px', fontSize: '13px', lineHeight: 1.8 }, text: 'تصل الكتب الجديدة والمصحَّحة في حزم صغيرة تُنزَّل وتُطبَّق دون إعادة تنزيل المكتبة كلّها.' }),
@@ -198,7 +198,7 @@ export class SettingsView {
       let pstate;
       if (p.running) pstate = h('span', { class: 'muted', style: { display: 'inline-flex', gap: '8px', alignItems: 'center' } }, h('span', { class: 'spinner' }), digits((ev && ev.message) || p.progress?.message || 'جارٍ النشر'));
       else if (p.error) pstate = h('span', { style: { color: 'var(--danger)' }, text: p.error });
-      else if (p.last) pstate = h('span', { class: 'muted', text: p.last.changed ? `${when(p.last.at)} · الإصدار ${num(p.last.version)}: ${num(p.last.added + p.last.updated)} كتاب` : `${when(p.last.at)} · لا جديد` });
+      else if (p.last) pstate = h('span', { class: 'muted', text: p.last.changed ? `${when(p.last.at)}، الإصدار ${num(p.last.version)}: ${num(p.last.added + p.last.updated)} كتاب` : `${when(p.last.at)}، لا جديد` });
       else pstate = h('span', { class: 'muted', text: '—' });
       rows.push(
         h('h3', { text: 'النشر (للمشرف)', style: { margin: '14px 0 2px', fontSize: '14px' } }),
@@ -245,7 +245,7 @@ export class SettingsView {
       const when = new Intl.DateTimeFormat('ar', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(st.last.at));
       const bits = [`أُضيف ${num(st.last.added)}`, `حُدِّث ${num(st.last.updated)}`];
       if (st.last.removed) bits.push(`أُزيل ${num(st.last.removed)}`);
-      state = h('span', { class: 'muted', text: `${when} · ${bits.join('، ')}` });
+      state = h('span', { class: 'muted', text: `${when}، ${bits.join('، ')}` });
     } else state = h('span', { class: 'faint', text: st.root ? 'لم يُجرَ تحديث بعد' : '—' });
 
     // Optional rows are null; native replaceChildren would print them as "null", so filter first.

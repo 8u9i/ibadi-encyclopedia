@@ -315,15 +315,20 @@ export function applyPack(libDir, file, onProgress = () => {}) {
     }
 
     onProgress('ضغط الفهرس', 0.95);
+    // Merging index segments only saves space; the update is complete without it.
+    let mergeSkipped = null;
     try {
       lib.exec("INSERT INTO page_fts(page_fts, rank) VALUES('merge', 500); INSERT INTO title_fts(title_fts, rank) VALUES('merge', 500);");
-    } catch {}
+    } catch (e) {
+      mergeSkipped = String(e.message || e);
+    }
     const nowBooks = new Set(lib.prepare('SELECT id FROM book').all().map((r) => r.id));
     return {
       version: head.version,
       added: head.put.filter((id) => !hadBooks.has(id) && nowBooks.has(id)),
       updated: head.put.filter((id) => hadBooks.has(id) && nowBooks.has(id)),
       removed: head.del.filter((id) => hadBooks.has(id)),
+      mergeSkipped,
     };
   } finally {
     lib.close();

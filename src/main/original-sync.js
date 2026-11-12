@@ -80,13 +80,13 @@ export class OriginalSync {
     const exe = process.platform === 'win32' ? 'java.exe' : 'java';
     // The original ships its own Java 21 runtime in numbered build folders; use the newest.
     const jreBase = root && path.join(root, 'app', 'win', '64', 'jre');
-    try {
+    if (jreBase && fs.existsSync(jreBase)) {
       const builds = fs.readdirSync(jreBase).filter((n) => /^\d+$/.test(n)).sort((a, b) => b - a);
       for (const b of builds) {
         const p = path.join(jreBase, b, 'bin', exe);
         if (fs.existsSync(p)) return p;
       }
-    } catch {}
+    }
     if (process.env.JAVA_HOME) {
       const p = path.join(process.env.JAVA_HOME, 'bin', exe);
       if (fs.existsSync(p)) return p;

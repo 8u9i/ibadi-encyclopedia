@@ -631,7 +631,7 @@ class App {
           const rate = secs > 2 ? (ev.received - startBytes) / secs : 0;
           if (rate > 0) {
             const left = Math.round((ev.total - ev.received) / rate / 60);
-            eta = ` · ${num((rate / 1e6).toFixed(1)).replace('.', '٫')} م.ب/ث · بقي نحو ${left < 1 ? 'أقلّ من دقيقة' : num(left) + ' دقيقة'}`;
+            eta = `، ${num((rate / 1e6).toFixed(1)).replace('.', '٫')} م.ب/ث، بقي نحو ${left < 1 ? 'أقلّ من دقيقة' : num(left) + ' دقيقة'}`;
           }
         }
         barLabel.textContent = `${digits(ev.message)} — ${num(Math.round(pct))}٪ (${gb(ev.received)} من ${gb(ev.total)})${eta}`;

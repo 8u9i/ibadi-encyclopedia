@@ -119,7 +119,7 @@ export class QuranView {
       h(
         'div',
         { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 18px', flexWrap: 'wrap' } },
-        h('strong', { text: `${SURA_NAMES[sura - 1]} · الآية ${num(a.num)}` }),
+        h('strong', { text: `${SURA_NAMES[sura - 1]}، الآية ${num(a.num)}` }),
         h('span', { class: 'faint', text: list.length ? 'التفسير في:' : 'لا تفسير مرتبط بهذه الآية في المكتبة' }),
         ...list.map((t) => h('button', { class: 'btn sm', onclick: () => this.app.openBook(t.book, { pid: t.pid, aya: a.id }) }, icon('quran'), t.name)),
         h('span', { style: { flex: 1 } }),

@@ -22,6 +22,21 @@ function bookDbPath(id) {
   return path.join(DB, 'book', String(id % 1000).padStart(3, '0'), `${id}.db`);
 }
 
+/** Reads the original's per-book database, or returns null when the book is not on disk yet. */
+function readBookDb(id, read) {
+  const file = bookDbPath(id);
+  if (!fs.existsSync(file)) return null;
+  let bdb;
+  try {
+    bdb = new DatabaseSync(file, { readOnly: true });
+    return read(bdb);
+  } catch (e) {
+    throw new Error(`تعذّرت قراءة بيانات الكتاب ${id} من البرنامج الأصلي (${e.message})`);
+  } finally {
+    bdb?.close();
+  }
+}
+
 async function* jsonl(file) {
   if (!fs.existsSync(file)) return;
   const rl = readline.createInterface({ input: fs.createReadStream(file), crlfDelay: Infinity });
@@ -57,12 +72,7 @@ function diff(lib, master) {
     } else {
       // First sync of a library built before snapshots existed: a book is current when its page
       // count matches the original's per-book database.
-      let pages = null;
-      try {
-        const bdb = new DatabaseSync(bookDbPath(id), { readOnly: true });
-        pages = bdb.prepare('SELECT count(*) AS n FROM page').get().n;
-        bdb.close();
-      } catch {}
+      const pages = readBookDb(id, (bdb) => bdb.prepare('SELECT count(*) AS n FROM page').get().n);
       if (pages !== have.get(id).pages) updated.push(id);
     }
   }
@@ -125,14 +135,12 @@ async function insertBooks(lib, ids) {
   for (const id of ids) {
     progress('apply', `إضافة الكتاب ${++i} من ${ids.length}`, i / ids.length);
     const pages = text.get(id) || new Map();
-    let info = new Map();
-    let tinfo = [];
-    try {
-      const bdb = new DatabaseSync(bookDbPath(id), { readOnly: true });
-      info = new Map(bdb.prepare('SELECT id, part, page FROM page').all().map((r) => [r.id, r]));
-      tinfo = bdb.prepare('SELECT id, page, parent FROM title ORDER BY id').all();
-      bdb.close();
-    } catch {}
+    const book = readBookDb(id, (bdb) => ({
+      info: new Map(bdb.prepare('SELECT id, part, page FROM page').all().map((r) => [r.id, r])),
+      tinfo: bdb.prepare('SELECT id, page, parent FROM title ORDER BY id').all(),
+    }));
+    const info = book?.info ?? new Map();
+    const tinfo = book?.tinfo ?? [];
     const pids = [...new Set([...info.keys(), ...pages.keys()])].sort((a, b) => a - b);
     if (!pids.length) continue; // nothing on disk for this book yet: it stays out until it arrives
     lib.exec('BEGIN');

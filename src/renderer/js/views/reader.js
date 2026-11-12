@@ -658,7 +658,7 @@ export class ReaderView {
   renderSearchResults() {
     const st = this.searchState;
     let info = st.total ? `${num(st.total)} صفحة مطابقة` : '';
-    if (st.roots?.length) info += ' · الجذر: ' + st.roots.map((r) => (r.roots.length ? r.roots.join('، ') : '—')).join(' / ');
+    if (st.roots?.length) info += '، الجذر: ' + st.roots.map((r) => (r.roots.length ? r.roots.join('، ') : '—')).join(' / ');
     this.searchInfo.textContent = info;
     if (!st.results.length) {
       this.searchList.replaceChildren(emptyState('search', 'لا نتائج', 'جرّب كلمات أخرى أو فعّل المطابقة المرنة أو البحث بالجذر.'));
