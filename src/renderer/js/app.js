@@ -37,6 +37,41 @@ const SECTIONS = [
   { id: 'settings', label: 'الإعدادات', icon: 'settings', View: SettingsView },
 ];
 
+/**
+ * Caption-button glyphs. On Windows these come from the system's own icon font (Segoe Fluent Icons
+ * on Windows 11, Segoe MDL2 Assets on Windows 10), so they match every other window exactly.
+ * Elsewhere, SVGs drawn on the same 10px grid with the same rounded corners stand in.
+ */
+function captionGlyphs() {
+  const CODES = { min: '', max: '', restore: '', close: '' };
+  const font = ['Segoe Fluent Icons', 'Segoe MDL2 Assets'].find((name) => {
+    // A missing font falls back to monospace, so a different width means the font is installed.
+    const ctx = document.createElement('canvas').getContext('2d');
+    ctx.font = '20px monospace';
+    const fallback = ctx.measureText(CODES.close).width;
+    ctx.font = `20px '${name}', monospace`;
+    return ctx.measureText(CODES.close).width !== fallback;
+  });
+  if (font) {
+    return (kind) => h('span', { class: 'wc-glyph', 'aria-hidden': 'true', style: { fontFamily: `'${font}'` }, text: CODES[kind] });
+  }
+  const PATHS = {
+    min: 'M0.5 5h9',
+    max: 'M2 .5h6A1.5 1.5 0 0 1 9.5 2v6A1.5 1.5 0 0 1 8 9.5H2A1.5 1.5 0 0 1 .5 8V2A1.5 1.5 0 0 1 2 .5Z',
+    restore: 'M1.75 2.5h5A1.25 1.25 0 0 1 8 3.75v4.5A1.25 1.25 0 0 1 6.75 9.5h-5A1.25 1.25 0 0 1 .5 8.25v-4.5A1.25 1.25 0 0 1 1.75 2.5ZM2.5 2.5v-.25A1.75 1.75 0 0 1 4.25.5h3.5A1.75 1.75 0 0 1 9.5 2.25v3.5A1.75 1.75 0 0 1 7.75 7.5H8',
+    close: 'M.75.75l8.5 8.5M9.25.75l-8.5 8.5',
+  };
+  return (kind) => {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 10 10');
+    svg.setAttribute('aria-hidden', 'true');
+    const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', PATHS[kind]);
+    svg.append(p);
+    return svg;
+  };
+}
+
 class App {
   constructor() {
     this.settings = { ...DEFAULTS };
@@ -207,27 +242,15 @@ class App {
     const app = document.getElementById('app');
     app.dataset.platform = state?.platform || '';
     if (!state || state.platform === 'darwin') return; // macOS keeps its native traffic lights
-    const glyph = (d) => {
-      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      svg.setAttribute('viewBox', '0 0 10 10');
-      svg.setAttribute('aria-hidden', 'true');
-      const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      p.setAttribute('d', d);
-      svg.append(p);
-      return svg;
-    };
-    const MIN = 'M0 5.5h10';
-    const MAX = 'M.5.5h9v9h-9z';
-    const RESTORE = 'M2.5 2.5h7v7h-7zM2.5 2.5V.5h7v7h-2';
-    const CLOSE = 'M.5.5l9 9M9.5.5l-9 9';
-    const min = h('button', { class: 'wc', title: 'تصغير', 'aria-label': 'تصغير', onclick: () => api.window.minimize() }, glyph(MIN));
+    const glyph = captionGlyphs();
+    const min = h('button', { class: 'wc', title: 'تصغير', 'aria-label': 'تصغير', onclick: () => api.window.minimize() }, glyph('min'));
     const max = h('button', { class: 'wc', onclick: () => api.window.toggleMaximize() });
-    const close = h('button', { class: 'wc wc-close', title: 'إغلاق', 'aria-label': 'إغلاق', onclick: () => api.window.close() }, glyph(CLOSE));
+    const close = h('button', { class: 'wc wc-close', title: 'إغلاق', 'aria-label': 'إغلاق', onclick: () => api.window.close() }, glyph('close'));
     clear(box).append(min, max, close);
     const apply = (s) => {
       if (!s) return;
       const label = s.maximized || s.fullscreen ? 'استعادة الحجم' : 'تكبير';
-      max.replaceChildren(glyph(s.maximized || s.fullscreen ? RESTORE : MAX));
+      max.replaceChildren(glyph(s.maximized || s.fullscreen ? 'restore' : 'max'));
       max.title = label;
       max.setAttribute('aria-label', label);
       app.classList.toggle('is-maximized', !!s.maximized);

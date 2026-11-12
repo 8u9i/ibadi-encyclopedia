@@ -249,7 +249,8 @@ kbd {
 /* window controls at the inline end (the left edge in RTL), as on mirrored Windows title bars */
 .win-controls { display: flex; flex: none; align-items: stretch; }
 .wc { width: 46px; border: 0; background: none; color: var(--text-2); display: grid; place-items: center; padding: 0; transition: background-color var(--d-fast); }
-.wc svg { width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 1; shape-rendering: crispEdges; }
+.wc-glyph { font-size: 10px; line-height: 1; font-weight: normal; }
+.wc svg { width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 1; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
 .wc:hover { background: var(--bg-hover); color: var(--text); }
 .wc:active { background: var(--line-strong); }
 .wc-close:hover { background: #c42b1c; color: #fff; }
