@@ -32,6 +32,14 @@
       "output": "dist",
       "buildResources": "build"
     },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "8u9i",
+        "repo": "ibadi-encyclopedia",
+        "releaseType": "release"
+      }
+    ],
     "files": [
       "package.json",
       "src/**/*",
@@ -167,5 +175,8 @@
         ]
       }
     ]
+  },
+  "dependencies": {
+    "electron-updater": "6.8.12"
   }
 }

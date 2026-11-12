@@ -217,6 +217,13 @@ kbd {
 .book-open:focus-visible { outline-offset: -2px; }
 
 .sb-foot { display: flex; flex-direction: column; gap: 2px; padding-top: 8px; border-top: 1px solid var(--line); }
+.sb-update { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px; margin-bottom: 6px; border-radius: var(--r-3); background: var(--bg-elev); box-shadow: var(--edge); }
+.sb-update-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex: none; }
+.sb-update-text { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-update .btn { width: 100%; }
+.app.is-rail .sb-update { padding: 6px; justify-content: center; }
+.app.is-rail .sb-update-text, .app.is-rail .sb-update .btn { display: none; }
+.app.is-rail .sb-update-dot { width: 10px; height: 10px; }
 
 /* collapsed sidebar: an icon rail */
 .app.is-rail { --sb-w: 66px; }

@@ -39,6 +39,18 @@ contextBridge.exposeInMainWorld('ibadi', {
       return () => ipcRenderer.removeListener('library-changed', l);
     },
   },
+  appUpdate: {
+    status: () => ipcRenderer.invoke('appupdate:status'),
+    check: () => ipcRenderer.invoke('appupdate:check'),
+    install: () => ipcRenderer.invoke('appupdate:install'),
+    openDownloadPage: () => ipcRenderer.invoke('appupdate:open'),
+    setAuto: (on) => ipcRenderer.invoke('appupdate:auto', !!on),
+    onEvent: (fn) => {
+      const l = (_e, st) => fn(st);
+      ipcRenderer.on('app-update', l);
+      return () => ipcRenderer.removeListener('app-update', l);
+    },
+  },
   update: {
     status: () => ipcRenderer.invoke('update:status'),
     run: () => ipcRenderer.invoke('update:run'),

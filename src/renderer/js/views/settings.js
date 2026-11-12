@@ -1,4 +1,4 @@
-import { h, icon, num, toast, digits } from '../dom.js';
+import { h, icon, num, toast, digits, versionLabel } from '../dom.js';
 import { DEFAULTS } from '../app.js';
 
 export class SettingsView {
@@ -120,6 +120,7 @@ export class SettingsView {
       ),
       (this.updateCard = h('div', { class: 'set-card', id: 'updates' })),
       (this.syncCard = h('div', { class: 'set-card', id: 'sync' })),
+      (this.appCard = h('div', { class: 'set-card', id: 'app-update' })),
       h(
         'div',
         { class: 'set-card' },
@@ -130,9 +131,64 @@ export class SettingsView {
     );
     this.renderSync();
     this.renderUpdates();
+    this.renderAppUpdate(this.app.appUpdateState);
   }
 
   syncPreview() {}
+
+  onAppUpdate(st) {
+    if (!this.el.hidden) this.renderAppUpdate(st);
+  }
+
+  /** New versions of the program itself (not the books). */
+  async renderAppUpdate(st) {
+    const card = this.appCard;
+    if (!card) return;
+    st = st || (await window.ibadi.appUpdate.status());
+    if (!st || st.mode === 'off') {
+      card.hidden = true;
+      return;
+    }
+    card.hidden = false;
+    const row = (label, hint, control) => h('div', { class: 'set-row' }, h('div', { class: 'lbl' }, label, hint ? h('small', { text: hint }) : null), control);
+    const v = versionLabel;
+    const busy = st.status === 'checking' || st.status === 'downloading';
+    let state;
+    if (st.status === 'checking') state = h('span', { class: 'muted', style: { display: 'inline-flex', gap: '8px', alignItems: 'center' } }, h('span', { class: 'spinner' }), 'جارٍ التحقّق…');
+    else if (st.status === 'downloading') state = h('span', { class: 'muted num', style: { display: 'inline-flex', gap: '8px', alignItems: 'center' } }, h('span', { class: 'spinner' }), `تنزيل الإصدار ${v(st.version)}: ${num(st.percent)}٪`);
+    else if (st.status === 'ready') state = h('span', { style: { color: 'var(--text)' }, text: `الإصدار ${v(st.version)} جاهز للتثبيت` });
+    else if (st.status === 'available') state = h('span', { style: { color: 'var(--text)' }, text: `يتوفّر الإصدار ${v(st.version)}` });
+    else if (st.status === 'error') state = h('span', { style: { color: 'var(--danger)' }, text: st.error });
+    else if (st.status === 'none') state = h('span', { class: 'muted', text: 'لديك أحدث إصدار' });
+    else state = h('span', { class: 'faint', text: '—' });
+
+    const actions = h('div', { style: { display: 'flex', gap: '8px' } });
+    if (st.status === 'ready') actions.append(h('button', { class: 'btn primary', onclick: () => window.ibadi.appUpdate.install() }, icon('history'), 'أعد التشغيل للتحديث'));
+    else if (st.status === 'available' && st.mode === 'notify') actions.append(h('button', { class: 'btn primary', onclick: () => window.ibadi.appUpdate.openDownloadPage() }, icon('download'), 'صفحة التنزيل'));
+    else {
+      const check = h('button', { class: 'btn', disabled: busy }, icon('history'), st.status === 'available' ? 'تنزيل التحديث' : 'تحقّق الآن');
+      check.addEventListener('click', async () => {
+        check.disabled = true;
+        await window.ibadi.appUpdate.check();
+      });
+      actions.append(check);
+    }
+
+    const rows = [
+      h('h2', { text: 'تحديث البرنامج' }),
+      h('p', { class: 'muted', style: { margin: '6px 0 4px', fontSize: '13px', lineHeight: 1.8 }, text: st.mode === 'auto'
+        ? 'يُنزَّل الإصدار الجديد من البرنامج في الخلفية، ويُثبَّت عند إعادة التشغيل أو عند إغلاق البرنامج. تبقى مكتبتك وإعداداتك كما هي.'
+        : 'عند صدور إصدار جديد يظهر تنبيه في الشريط الجانبي مع رابط التنزيل. ثبّته فوق الإصدار الحالي، وتبقى مكتبتك كما هي.' }),
+      row('الحالة', `الإصدار الحالي ${v(st.current)}`, state),
+    ];
+    if (st.mode === 'auto') {
+      const auto = h('input', { type: 'checkbox', checked: !!st.auto, 'aria-label': 'تنزيل تحديثات البرنامج تلقائيًا' });
+      auto.addEventListener('change', () => window.ibadi.appUpdate.setAuto(auto.checked));
+      rows.push(row('تنزيل التحديثات تلقائيًا', 'يتحقّق عند التشغيل وكلّ ستّ ساعات', auto));
+    }
+    rows.push(h('div', { class: 'set-row' }, h('span', { style: { flex: 1 } }), actions));
+    card.replaceChildren(...rows);
+  }
 
   onUpdateEvent(ev) {
     if (!this.el.hidden) this.renderUpdates(ev);

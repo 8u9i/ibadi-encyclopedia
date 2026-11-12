@@ -1,4 +1,4 @@
-import { h, icon, clear, modal, toast, coverEl, debounce, setDigitStyle, deathLabel, logo, fillIcons, num, digits } from './dom.js';
+import { h, icon, clear, modal, toast, coverEl, debounce, setDigitStyle, deathLabel, logo, fillIcons, num, digits, versionLabel } from './dom.js';
 import { LibraryView } from './views/library.js';
 import { SearchView } from './views/search.js';
 import { QuranView } from './views/quran.js';
@@ -101,6 +101,8 @@ class App {
     api.sync.onEvent((ev) => this.onSyncEvent(ev));
     api.sync.onLibraryChanged((ev) => this.onLibraryChanged(ev));
     api.update.onEvent((ev) => this.onUpdateEvent(ev));
+    api.appUpdate.onEvent((st) => this.onAppUpdate(st));
+    api.appUpdate.status().then((st) => this.onAppUpdate(st));
 
     const status = await api.library.status();
     if (!status?.ok) {
@@ -184,7 +186,8 @@ class App {
 
     this.themeBtn = h('button', { class: 'nav-item', onclick: () => this.cycleTheme() });
     this.settingsBtn = this.navItem(SECTIONS.find((s) => s.id === 'settings'));
-    clear(document.getElementById('sb-foot')).append(this.themeBtn, this.settingsBtn);
+    this.appUpdateCard = h('div', { class: 'sb-update', hidden: true });
+    clear(document.getElementById('sb-foot')).append(this.appUpdateCard, this.themeBtn, this.settingsBtn);
 
     this.crumbsEl = document.getElementById('crumbs');
     const tools = document.getElementById('tools');
@@ -299,6 +302,32 @@ class App {
     }
     if (ev.phase === 'error') toast('تعذّر التحديث من البرنامج الأصلي: ' + ev.message, 'error');
     this.sections.get('settings')?.onSyncEvent?.(ev);
+  }
+
+  // -------------------------------------------------------------- new versions of the app
+  /** A sidebar card appears only when there is something to do: restart, or download. */
+  onAppUpdate(st) {
+    this.appUpdateState = st;
+    this.sections.get('settings')?.onAppUpdate?.(st);
+    const card = this.appUpdateCard;
+    if (!card || !st) return;
+    const v = versionLabel(st.version);
+    let title = null;
+    let action = null;
+    if (st.mode === 'auto' && st.status === 'ready') {
+      title = `الإصدار ${v} جاهز`;
+      action = h('button', { class: 'btn sm primary', onclick: () => api.appUpdate.install() }, icon('history'), 'أعد التشغيل للتحديث');
+    } else if (st.status === 'available' && st.mode === 'notify') {
+      title = `يتوفّر الإصدار ${v}`;
+      action = h('button', { class: 'btn sm primary', onclick: () => api.appUpdate.openDownloadPage() }, icon('download'), 'تنزيل');
+    } else if (st.status === 'available' && st.mode === 'auto' && !st.auto) {
+      title = `يتوفّر الإصدار ${v}`;
+      action = h('button', { class: 'btn sm primary', onclick: () => api.appUpdate.check() }, icon('download'), 'تنزيل التحديث');
+    }
+    card.hidden = !title;
+    if (!title) return;
+    card.title = title;
+    clear(card).append(h('span', { class: 'sb-update-dot', 'aria-hidden': 'true' }), h('span', { class: 'sb-update-text', text: title }), action);
   }
 
   // -------------------------------------------------------------- published library updates

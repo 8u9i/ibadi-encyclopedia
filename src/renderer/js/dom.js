@@ -69,6 +69,7 @@ const ICONS = {
   list: 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',
   goto: 'M5 12h14M13 6l6 6-6 6',
   layers: 'M12 3 3 8l9 5 9-5-9-5ZM3 13l9 5 9-5',
+  download: 'M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14',
   sidebar: 'M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1ZM15 5v14',
 };
 
@@ -121,6 +122,12 @@ export function num(n) {
 /** True when a death text is a date (e.g. "93", "ق 2", "بعد 1200") rather than a label such as "مؤسسة". */
 export function isDeathDate(text) {
   return !text || /\d/.test(text);
+}
+
+/** "2.3.0" → "٢٫٣" (or "2.3"): a version for display, trailing ".0" dropped. */
+export function versionLabel(v) {
+  const s = num(String(v || '').replace(/^v/, '').replace(/\.0$/, ''));
+  return /[٠-٩]/.test(s) ? s.replace(/\./g, '٫') : s;
 }
 
 /** Applies the digit style to numbers inside a message composed elsewhere (main process). */

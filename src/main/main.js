@@ -7,6 +7,7 @@ import { Settings } from './settings.js';
 import { OriginalSync, normalizeOriginalRoot } from './original-sync.js';
 import { LibraryDownloader } from './library-download.js';
 import { LibraryUpdater } from './library-update.js';
+import { AppUpdater } from './app-update.js';
 
 // Published library (release assets of this project). Overridable for testing.
 const LIBRARY_URL = process.env.IBADI_LIBRARY_URL || 'https://github.com/8u9i/ibadi-encyclopedia/releases/download/library/';
@@ -44,6 +45,7 @@ let win = null;
 let worker = null;
 let sync = null;
 let updater = null;
+let appUpdater = null;
 const downloader = new LibraryDownloader({ baseUrl: LIBRARY_URL, send: (ev) => win?.webContents.send('library-download', ev) });
 let workerReady = null;
 let libraryPath = null;
@@ -309,7 +311,7 @@ const DB_METHODS = new Set([
 
 const PROTECTED_SETTINGS = new Set([
   'libraryPath', 'bounds', 'maximized', 'originalPath', 'syncSignature', 'lastSync', 'autoSync',
-  'autoUpdate', 'autoPublish', 'lastUpdate', 'lastPublish', 'updateCheckedAt', 'publishRepo',
+  'autoUpdate', 'autoPublish', 'lastUpdate', 'lastPublish', 'updateCheckedAt', 'publishRepo', 'autoAppUpdate', 'appUpdateCheckedAt',
 ]);
 
 const unpacked = (file) => path.join(__dirname, file).replace(`app.asar${path.sep}`, `app.asar.unpacked${path.sep}`);
@@ -428,6 +430,17 @@ function registerIpc() {
     if (isTrusted(e) && updater?.publisher) settings.set('autoPublish', !!on);
   });
   ipcMain.handle('update:publish', (e) => (isTrusted(e) && updater ? updater.publish() : null));
+  ipcMain.handle('appupdate:status', (e) => (isTrusted(e) && appUpdater ? appUpdater.status() : null));
+  ipcMain.handle('appupdate:check', (e) => (isTrusted(e) && appUpdater ? appUpdater.check(true) : null));
+  ipcMain.handle('appupdate:install', (e) => (isTrusted(e) && appUpdater ? appUpdater.install() : false));
+  ipcMain.handle('appupdate:open', (e) => {
+    if (isTrusted(e)) appUpdater?.openDownloadPage();
+  });
+  ipcMain.handle('appupdate:auto', (e, on) => {
+    if (!isTrusted(e)) return;
+    settings.set('autoAppUpdate', !!on);
+    if (on) appUpdater?.check(false);
+  });
   ipcMain.handle('window:state', (e) => (isTrusted(e) ? windowState() : null));
   ipcMain.handle('window:control', (e, action) => {
     if (!isTrusted(e) || !win || win.isDestroyed()) return;
@@ -519,8 +532,10 @@ app.whenReady().then(async () => {
     isBlocked: () => !!sync?.running,
     workerFile: unpacked('update-worker.js'),
   });
+  appUpdater = new AppUpdater({ settings, send: (st) => win?.webContents.send('app-update', st) });
   sync.start();
   updater.start();
+  appUpdater.start();
   app.on('activate', () => {
     if (!BrowserWindow.getAllWindows().length) createWindow();
   });
@@ -534,6 +549,7 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   sync?.stop();
   updater?.stop();
+  appUpdater?.stop();
   settings.flush();
   stopWorker();
 });

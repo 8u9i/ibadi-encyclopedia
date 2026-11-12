@@ -77,6 +77,15 @@ The library is too large for an installer, and keeping it separate lets content 
 - The app downloads to `%LOCALAPPDATA%\Ibadi Encyclopedia\library` on Windows (or a folder the user picks). It checks free space first, resumes interrupted parts with HTTP Range requests, and verifies every part and every restored file before using them. It currently downloads about 1.2 GB, which becomes 3.4 GB on disk.
 - People who already have a library folder can choose it instead («لديّ مجلّد المكتبة»), or place it next to the app as `library`.
 
+## App updates
+
+New versions of the app itself reach installed copies from this repository's GitHub releases (electron-updater, the one runtime dependency).
+
+- **Windows (x64 and ARM) and Linux AppImage**: the app checks at startup and every six hours, downloads the installer for its architecture in the background, and shows «أعد التشغيل للتحديث» in the sidebar. The update also installs when the app is closed. It can be turned off in Settings → «تحديث البرنامج».
+- **macOS and the .deb package**: macOS will not replace an unsigned app, so these builds only show «يتوفّر الإصدار …» with a link to the download page. Signing the Mac build (Apple Developer ID) would let it update itself too.
+- **Publishing**: CI uploads `latest.yml`, `latest-linux.yml` and the `.blockmap` files next to the installers; they must be attached to every release. Installer names carry no version, so `https://github.com/8u9i/ibadi-encyclopedia/releases/latest/download/<name>` always serves the newest build.
+- **Testing**: build two versions locally, serve the newer one's `dist` folder over HTTP, and start the older app with `IBADI_APP_UPDATE_URL=http://127.0.0.1:<port>/`.
+
 ## Library updates (for everyone)
 
 New and corrected books reach every installed copy as small **update packs**, not a new 1.2 GB download.
