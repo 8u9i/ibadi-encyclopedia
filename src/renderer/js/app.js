@@ -241,7 +241,19 @@ class App {
     const state = await api.window.state();
     const app = document.getElementById('app');
     app.dataset.platform = state?.platform || '';
-    if (!state || state.platform === 'darwin') return; // macOS keeps its native traffic lights
+    if (!state) return;
+    if (state.platform === 'darwin') {
+      // macOS keeps its native traffic lights; the layout only makes room on the side they sit.
+      app.dataset.lights = state.buttonsSide || 'left';
+      const track = (s) => {
+        if (!s) return;
+        app.classList.toggle('is-fullscreen', !!s.fullscreen);
+        app.classList.toggle('is-blurred', !s.focused);
+      };
+      track(state);
+      api.window.onState(track);
+      return;
+    }
     const glyph = captionGlyphs();
     const min = h('button', { class: 'wc', title: 'تصغير', 'aria-label': 'تصغير', onclick: () => api.window.minimize() }, glyph('min'));
     const max = h('button', { class: 'wc', onclick: () => api.window.toggleMaximize() });

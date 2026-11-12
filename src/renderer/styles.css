@@ -235,7 +235,13 @@ kbd {
   -webkit-app-region: drag; user-select: none;
 }
 .titlebar button { -webkit-app-region: no-drag; }
-.app[data-platform='darwin'] .titlebar { padding-inline-end: 80px; } /* traffic lights */
+/* macOS traffic lights (native, 16px in and centred on the 44px bar). They sit top-left, or
+   top-right when macOS runs in a right-to-left language; full screen hides them. */
+.app[data-lights='left']:not(.is-fullscreen) .titlebar { padding-inline-end: 84px; }
+.app[data-lights='right']:not(.is-fullscreen) .sidebar { padding-top: 44px; -webkit-app-region: drag; }
+.app[data-lights='right']:not(.is-fullscreen) .sb-scroll, .app[data-lights='right']:not(.is-fullscreen) .sb-foot { -webkit-app-region: no-drag; }
+.app.is-rail[data-lights='right']:not(.is-fullscreen) { --sb-w: 80px; }
+.app.no-library[data-lights='right']:not(.is-fullscreen) .titlebar { padding-inline-start: 84px; }
 .tb-crumbs { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; font-size: 13px; color: var(--text-3); }
 .crumb { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .crumb.is-current { color: var(--text-2); }

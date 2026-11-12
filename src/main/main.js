@@ -166,7 +166,23 @@ function themeBackground() {
 
 function windowState() {
   if (!win || win.isDestroyed()) return null;
-  return { maximized: win.isMaximized(), minimized: win.isMinimized(), fullscreen: win.isFullScreen(), focused: win.isFocused(), platform: process.platform };
+  return {
+    maximized: win.isMaximized(),
+    minimized: win.isMinimized(),
+    fullscreen: win.isFullScreen(),
+    focused: win.isFocused(),
+    platform: process.platform,
+    buttonsSide: process.platform === 'darwin' ? (macLayoutIsRtl() ? 'right' : 'left') : null,
+  };
+}
+
+/**
+ * macOS lays the window out right-to-left (and Electron mirrors the traffic lights to the top-right)
+ * when the app runs in a right-to-left localization, which happens when the system language is
+ * Arabic: the app ships an Arabic localization.
+ */
+function macLayoutIsRtl() {
+  return /^(ar|he|fa|ur)\b/i.test(app.getLocale());
 }
 
 function createWindow() {
@@ -183,7 +199,7 @@ function createWindow() {
     // The app draws its own title bar. 'hidden' keeps the native frame behaviour (Windows 11 rounded
     // corners, shadow, edge resizing, snapping); macOS keeps its traffic lights inside our bar.
     titleBarStyle: mac ? 'hiddenInset' : 'hidden',
-    trafficLightPosition: mac ? { x: 14, y: 13 } : undefined,
+    trafficLightPosition: mac ? { x: 16, y: 15 } : undefined, // centred on the 44px title bar
     icon: path.join(SRC, '..', 'build', 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
