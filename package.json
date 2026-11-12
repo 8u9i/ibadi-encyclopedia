@@ -77,7 +77,7 @@
       "icon": "build/icon.png",
       "requestedExecutionLevel": "asInvoker",
       "legalTrademarks": "الموسوعة الإباضية",
-      "artifactName": "Ibadi-Encyclopedia-${version}-win-${arch}.${ext}"
+      "artifactName": "Ibadi-Encyclopedia-win-${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,
@@ -96,7 +96,7 @@
       "unicode": true,
       "deleteAppDataOnUninstall": false,
       "buildUniversalInstaller": false,
-      "artifactName": "Ibadi-Encyclopedia-Setup-${version}-${arch}.${ext}"
+      "artifactName": "Ibadi-Encyclopedia-Setup-${arch}.${ext}"
     },
     "mac": {
       "target": [
@@ -120,7 +120,7 @@
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "darkModeSupport": true,
-      "artifactName": "Ibadi-Encyclopedia-${version}-mac-${arch}.${ext}"
+      "artifactName": "Ibadi-Encyclopedia-mac-${arch}.${ext}"
     },
     "dmg": {
       "title": "Ibadi Encyclopedia ${version}"
@@ -155,7 +155,7 @@
           "StartupWMClass": "Ibadi Encyclopedia"
         }
       },
-      "artifactName": "Ibadi-Encyclopedia-${version}-linux-${arch}.${ext}"
+      "artifactName": "Ibadi-Encyclopedia-linux-${arch}.${ext}"
     },
     "extraResources": [
       {
