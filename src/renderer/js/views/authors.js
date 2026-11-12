@@ -16,6 +16,7 @@ export class AuthorsView {
     this.el = h(
       'section',
       null,
+      h('div', { class: 'pane-head' }, h('h1', { text: 'المؤلفون' })),
       h(
         'div',
         { class: 'split' },

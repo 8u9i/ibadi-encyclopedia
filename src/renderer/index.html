@@ -12,14 +12,27 @@
   </head>
   <body>
     <div id="app" class="app">
-      <header class="titlebar" id="titlebar">
-        <div class="tb-brand" id="brand"></div>
-        <nav class="tb-sections" id="sections" aria-label="الأقسام"></nav>
-        <div class="tb-tabs" id="tabs" role="tablist" aria-label="الكتب المفتوحة"></div>
-        <div class="tb-tools" id="tools"></div>
-        <div class="win-controls" id="win-controls"></div>
-      </header>
-      <main class="views" id="views"></main>
+      <aside class="sidebar" id="sidebar" aria-label="التنقّل">
+        <div class="sb-head" id="brand"></div>
+        <div class="sb-scroll">
+          <div class="sb-search-row" id="sb-search"></div>
+          <div class="sb-label">الأساسيات</div>
+          <nav class="sb-nav" id="sections" aria-label="الأقسام"></nav>
+          <div class="sb-group" id="open-group" hidden>
+            <div class="sb-group-head" id="open-head"></div>
+            <div class="sb-books" id="tabs" role="tablist" aria-orientation="vertical" aria-label="الكتب المفتوحة"></div>
+          </div>
+        </div>
+        <div class="sb-foot" id="sb-foot"></div>
+      </aside>
+      <div class="stage">
+        <header class="titlebar" id="titlebar">
+          <div class="tb-crumbs" id="crumbs"></div>
+          <div class="tb-tools" id="tools"></div>
+          <div class="win-controls" id="win-controls"></div>
+        </header>
+        <main class="views" id="views"></main>
+      </div>
     </div>
     <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
     <script type="module" src="js/app.js"></script>

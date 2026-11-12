@@ -93,7 +93,7 @@ export class SettingsView {
     });
 
     this.wrap.replaceChildren(
-      h('div', { class: 'pane-head', style: { border: 0, background: 'none', padding: '0 4px' } }, h('h1', { text: 'الإعدادات' })),
+      h('div', { class: 'pane-head' }, h('h1', { text: 'الإعدادات' })),
       h(
         'div',
         { class: 'set-card' },

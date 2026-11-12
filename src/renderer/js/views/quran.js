@@ -25,7 +25,7 @@ export class QuranView {
     this.tafsir = h('div', { class: 'tafsir-box', hidden: true });
     this.content = h('div', { class: 'content', style: { display: 'flex', flexDirection: 'column' } }, h('div', { style: { flex: 1, overflow: 'auto' } }, this.pane), this.tafsir);
     this.scroller = this.content.firstChild;
-    this.el = h('section', null, h('div', { class: 'split' }, this.side, this.content));
+    this.el = h('section', null, h('div', { class: 'pane-head' }, h('h1', { text: 'القرآن الكريم' })), h('div', { class: 'split' }, this.side, this.content));
     this.renderList();
   }
 

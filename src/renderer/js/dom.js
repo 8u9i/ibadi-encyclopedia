@@ -69,6 +69,7 @@ const ICONS = {
   list: 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01',
   goto: 'M5 12h14M13 6l6 6-6 6',
   layers: 'M12 3 3 8l9 5 9-5-9-5ZM3 13l9 5 9-5',
+  sidebar: 'M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1ZM15 5v14',
 };
 
 export function icon(name, cls) {

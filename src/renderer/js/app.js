@@ -84,6 +84,7 @@ class App {
     this.catMap = new Map(cats.map((c) => [c.id, c]));
     this.favorites = new Set(favs);
     document.getElementById('app').classList.remove('no-library');
+    this.brandCount.textContent = `${num(books.length)} كتابًا`;
     this.go('library');
     this.restoreTabs();
   }
@@ -119,32 +120,85 @@ class App {
   }
 
   // -------------------------------------------------------------- navigation
-  /** One bar replaces the OS title bar, the section rail and the tab strip. */
+  /**
+   * The shell: a sidebar (brand, quick search, sections, open books, settings) beside a stage that
+   * holds a thin draggable title bar and the current view. Open books live in the sidebar, so the
+   * reader gets the full width of the stage.
+   */
   buildTitlebar() {
     const brand = document.getElementById('brand');
-    clear(brand).append(logo(), h('span', { class: 'wordmark', text: 'الموسوعة الإباضية' }));
+    this.brandCount = h('small', { class: 'num' });
+    const rail = h('button', { class: 'icon-btn sb-rail-btn', title: 'طيّ الشريط الجانبي (Ctrl+B)', 'aria-label': 'طيّ الشريط الجانبي', onclick: () => this.toggleRail() }, icon('sidebar'));
+    clear(brand).append(
+      h('div', { class: 'sb-brand' }, h('span', { class: 'sb-logo' }, logo()), h('div', { class: 'sb-brand-text' }, h('strong', { text: 'الموسوعة الإباضية' }), this.brandCount)),
+      rail,
+    );
+
+    clear(document.getElementById('sb-search')).append(
+      h('button', { class: 'sb-search', title: 'بحث سريع عن كتاب أو مؤلف (Ctrl+K)', onclick: () => this.palette() }, icon('search'), h('span', { class: 'sb-search-label', text: 'بحث سريع' }), h('kbd', { text: 'Ctrl K' })),
+    );
 
     clear(this.sectionsEl);
     for (const s of SECTIONS) {
       if (s.id === 'settings') continue;
-      this.sectionsEl.append(
-        h('button', { class: 'sec', dataset: { section: s.id }, title: `${s.label} (Alt+${SECTIONS.indexOf(s) + 1})`, onclick: () => this.go(s.id) }, icon(s.icon), h('span', { class: 'sec-label', text: s.label })),
-      );
+      this.sectionsEl.append(this.navItem(s));
     }
 
+    this.openHead = document.getElementById('open-head');
+    this.openGroup = document.getElementById('open-group');
+
+    this.themeBtn = h('button', { class: 'nav-item', onclick: () => this.cycleTheme() });
+    this.settingsBtn = this.navItem(SECTIONS.find((s) => s.id === 'settings'));
+    clear(document.getElementById('sb-foot')).append(this.themeBtn, this.settingsBtn);
+
+    this.crumbsEl = document.getElementById('crumbs');
     const tools = document.getElementById('tools');
-    this.themeBtn = h('button', { class: 'tb-btn', onclick: () => this.cycleTheme() });
-    this.settingsBtn = h('button', { class: 'tb-btn', dataset: { section: 'settings' }, title: 'الإعدادات (Alt+6)', 'aria-label': 'الإعدادات', onclick: () => this.go('settings') }, icon('settings'));
     this.syncChip = h('button', { class: 'tb-sync', hidden: true, onclick: () => this.go('settings', { section: this.chipTarget || 'sync' }) }, h('span', { class: 'spinner' }), h('span', { class: 'tb-sync-label', text: 'تحديث الكتب…' }));
-    clear(tools).append(
-      this.syncChip,
-      h('button', { class: 'tb-find', title: 'بحث سريع عن كتاب أو مؤلف (Ctrl+K)', onclick: () => this.palette() }, icon('search'), h('span', { class: 'tb-find-label', text: 'كتاب أو مؤلف…' }), h('kbd', { text: 'Ctrl K' })),
-      this.themeBtn,
-      this.settingsBtn,
-    );
+    clear(tools).append(this.syncChip);
     this.updateThemeButton();
+    this.applyRail();
 
     this.buildWindowControls();
+  }
+
+  navItem(s) {
+    const n = SECTIONS.indexOf(s) + 1;
+    return h(
+      'button',
+      { class: 'nav-item', dataset: { section: s.id }, title: `${s.label} (Alt+${n})`, onclick: () => this.go(s.id) },
+      icon(s.icon),
+      h('span', { class: 'nav-label', text: s.label }),
+    );
+  }
+
+  applyRail() {
+    const on = !!this.settings.sidebarRail;
+    document.getElementById('app').classList.toggle('is-rail', on);
+    const btn = document.querySelector('.sb-rail-btn');
+    if (btn) {
+      const label = on ? 'إظهار الشريط الجانبي (Ctrl+B)' : 'طيّ الشريط الجانبي (Ctrl+B)';
+      btn.title = label;
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('aria-expanded', String(!on));
+    }
+  }
+
+  toggleRail() {
+    this.setSetting('sidebarRail', !this.settings.sidebarRail);
+    this.applyRail();
+  }
+
+  /** Where am I: the section, or the open book, shown at the start of the title bar. */
+  updateCrumbs() {
+    if (!this.crumbsEl) return;
+    const tab = this.tabs.find((t) => t.id === this.active);
+    const sec = SECTIONS.find((s) => s.id === this.section);
+    const parts = tab ? ['الكتب المفتوحة', tab.title] : [sec?.label || 'الموسوعة الإباضية'];
+    clear(this.crumbsEl);
+    parts.forEach((p, i) => {
+      if (i) this.crumbsEl.append(h('span', { class: 'crumb-sep', 'aria-hidden': 'true', text: '/' }));
+      this.crumbsEl.append(h('span', { class: i === parts.length - 1 ? 'crumb is-current' : 'crumb', text: p }));
+    });
   }
 
   async buildWindowControls() {
@@ -186,10 +240,9 @@ class App {
   updateThemeButton() {
     if (!this.themeBtn) return;
     const cur = document.documentElement.dataset.theme;
-    const names = { light: 'الورق الفاتح', sepia: 'الرَّقّ', dark: 'السراج (داكن)' };
-    this.themeBtn.replaceChildren(icon(cur === 'dark' ? 'moon' : 'sun'));
-    this.themeBtn.title = `المظهر: ${names[cur] || ''} — انقر للتبديل`;
-    this.themeBtn.setAttribute('aria-label', 'تبديل المظهر');
+    const names = { light: 'فاتح', sepia: 'ورقي', dark: 'داكن' };
+    this.themeBtn.replaceChildren(icon(cur === 'dark' ? 'moon' : 'sun'), h('span', { class: 'nav-label', text: `المظهر: ${names[cur] || ''}` }));
+    this.themeBtn.title = 'تبديل المظهر';
   }
 
   cycleTheme() {
@@ -197,7 +250,7 @@ class App {
     const cur = document.documentElement.dataset.theme;
     const next = order[(order.indexOf(cur) + 1) % order.length];
     this.setSetting('theme', next);
-    toast({ light: 'المظهر: الورق الفاتح', sepia: 'المظهر: الرَّقّ', dark: 'المظهر: السراج' }[next]);
+    toast({ light: 'المظهر الفاتح', sepia: 'المظهر الورقي', dark: 'المظهر الداكن' }[next]);
   }
 
   // -------------------------------------------------------------- sync with the original app
@@ -254,7 +307,7 @@ class App {
 
   markNav() {
     const onSection = this.active === 'section';
-    for (const b of document.querySelectorAll('#titlebar [data-section]')) {
+    for (const b of document.querySelectorAll('#sidebar [data-section]')) {
       const cur = onSection && b.dataset.section === this.section;
       if (cur) b.setAttribute('aria-current', 'page');
       else b.removeAttribute('aria-current');
@@ -295,36 +348,45 @@ class App {
     }
     this.markNav();
     this.renderTabs();
+    this.updateCrumbs();
   }
 
-  /** Open books as tabs. Each tab is a pair of sibling buttons (open, close): buttons never nest. */
+  /** Open books, listed in the sidebar. Each entry is a pair of sibling buttons (open, close). */
   renderTabs() {
     clear(this.tabsEl);
-    this.tabsEl.hidden = !this.tabs.length;
+    if (this.openGroup) this.openGroup.hidden = !this.tabs.length;
+    if (this.openHead) {
+      const closeAll = h('button', { class: 'icon-btn sm', title: 'إغلاق كل الكتب', 'aria-label': 'إغلاق كل الكتب', onclick: () => this.closeAllTabs() }, icon('close'));
+      clear(this.openHead).append(h('span', { class: 'sb-label', text: 'الكتب المفتوحة' }), h('span', { class: 'sb-count num', text: num(this.tabs.length) }), closeAll);
+    }
     for (const t of this.tabs) {
       const selected = this.active === t.id;
+      const book = this.bookMap.get(t.bookId);
       const open = h(
         'button',
-        { class: 'tab-open', role: 'tab', title: t.title, 'aria-selected': String(selected), tabindex: selected ? '0' : '-1', onclick: () => this.activate(t.id) },
-        h('span', { class: 'tab-label', text: t.title }),
+        { class: 'book-open', role: 'tab', title: t.title, 'aria-selected': String(selected), tabindex: selected ? '0' : '-1', onclick: () => this.activate(t.id) },
+        book ? coverEl(book, { small: true }) : null,
+        h('span', { class: 'book-label', text: t.title }),
       );
-      const close = h('button', { class: 'tab-close', title: 'إغلاق الكتاب (Ctrl+W)', 'aria-label': `إغلاق ${t.title}`, onclick: () => this.closeTab(t.id) }, icon('close'));
-      const tab = h('div', { class: 'tab' + (selected ? ' is-selected' : '') }, open, close);
-      tab.addEventListener('auxclick', (e) => {
+      const close = h('button', { class: 'book-close', title: 'إغلاق الكتاب (Ctrl+W)', 'aria-label': `إغلاق ${t.title}`, onclick: () => this.closeTab(t.id) }, icon('close'));
+      const row = h('div', { class: 'book-item' + (selected ? ' is-selected' : '') }, open, close);
+      row.addEventListener('auxclick', (e) => {
         if (e.button === 1) this.closeTab(t.id);
       });
       open.addEventListener('keydown', (e) => {
-        // Arrow keys move between tabs (mirrored for RTL), per the tablist pattern.
-        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
         e.preventDefault();
-        e.stopPropagation();
-        const list = [...this.tabsEl.querySelectorAll('.tab-open')];
-        const i = list.indexOf(open) + (e.key === 'ArrowLeft' ? 1 : -1);
+        const list = [...this.tabsEl.querySelectorAll('.book-open')];
+        const i = list.indexOf(open) + (e.key === 'ArrowDown' ? 1 : -1);
         list[(i + list.length) % list.length]?.focus();
       });
-      this.tabsEl.append(tab);
+      this.tabsEl.append(row);
     }
-    this.tabsEl.querySelector('.is-selected')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    this.tabsEl.querySelector('.is-selected')?.scrollIntoView({ block: 'nearest' });
+  }
+
+  closeAllTabs() {
+    for (const t of [...this.tabs]) this.closeTab(t.id);
   }
 
   /**
@@ -512,6 +574,9 @@ class App {
         e.preventDefault();
         const sel = String(getSelection() || '').trim();
         this.go('search', sel ? { q: sel } : { focus: true });
+      } else if (mod && !e.shiftKey && e.key.toLowerCase() === 'f' && this.active === 'section' && this.section === 'library') {
+        e.preventDefault();
+        this.sections.get('library')?.focusFilter();
       } else if (mod && e.key.toLowerCase() === 'w') {
         if (this.active !== 'section') {
           e.preventDefault();
@@ -522,6 +587,9 @@ class App {
         const ids = ['section', ...this.tabs.map((t) => t.id)];
         const i = ids.indexOf(this.active);
         this.activate(ids[(i + (e.shiftKey ? -1 : 1) + ids.length) % ids.length]);
+      } else if (mod && !e.shiftKey && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        this.toggleRail();
       } else if (e.altKey && /^[1-6]$/.test(e.key)) {
         e.preventDefault();
         this.go(SECTIONS[Number(e.key) - 1].id);
@@ -556,7 +624,8 @@ class App {
       ['Ctrl + D', 'إضافة علامة'],
       ['Ctrl + = / Ctrl + -', 'تكبير الخط / تصغيره'],
       ['Ctrl + W', 'إغلاق الكتاب'],
-      ['Ctrl + Tab', 'التنقل بين الألسنة'],
+      ['Ctrl + Tab', 'التنقّل بين الكتب المفتوحة'],
+      ['Ctrl + B', 'طيّ الشريط الجانبي وإظهاره'],
       ['Alt + 1…6', 'الانتقال بين الأقسام'],
     ];
     modal({

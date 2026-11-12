@@ -70,6 +70,7 @@ export class SearchView {
     this.el = h(
       'section',
       null,
+      h('div', { class: 'pane-head' }, h('h1', { text: 'البحث في المكتبة' })),
       h(
         'div',
         { class: 's-form' },
